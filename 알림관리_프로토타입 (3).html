@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>연수원 3.0 Admin · 알림 관리 프로토타입</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#F7F8FA; --surface:#FFFFFF; --surface-2:#FBFCFD;
+    --ink:#1A2430; --muted:#6B7785; --faint:#9AA4B0;
+    --line:#E3E7ED; --line-strong:#D3D9E1;
+    --primary:#0E9488; --primary-ink:#0B7A70; --primary-wash:#E6F4F2;
+    --danger:#D64545; --danger-wash:#FBECEC;
+    --success:#1E9E6A; --success-wash:#E7F5EE;
+    --warn:#B07A12; --warn-wash:#FBF2DD;
+    --ad:#7A3FB0; --ad-wash:#F3ECFB;
+    --shadow:0 10px 30px rgba(26,36,48,.14);
+    --radius:8px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4,p{margin:0}
+  button{font-family:inherit; cursor:pointer}
+  a{color:var(--primary-ink)}
+
+  /* App bar */
+  .appbar{display:flex; align-items:center; gap:16px; height:56px; padding:0 20px;
+    background:var(--surface); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:20}
+  .brand{display:flex; align-items:center; gap:9px; font-weight:700; letter-spacing:-.01em}
+  .brand .dot{width:18px;height:18px;border-radius:5px;background:var(--primary)}
+  .brand small{color:var(--muted);font-weight:500;font-size:12px}
+  .crumb{color:var(--muted); font-size:13px}
+  .crumb b{color:var(--ink); font-weight:600}
+  .appbar .spacer{flex:1}
+  .demo{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted)}
+  .demo .tag{background:var(--warn-wash); color:var(--warn); border-radius:5px; padding:2px 7px; font-weight:600}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:20px}
+
+  /* Tabs */
+  .tabs{display:inline-flex; background:#EEF1F5; border-radius:9px; padding:4px; margin-bottom:18px}
+  .tabs button{border:0; background:transparent; color:var(--muted); font-size:14px; font-weight:600; padding:8px 18px; border-radius:7px}
+  .tabs button.on{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(26,36,48,.08)}
+  .tabs.sub{margin-top:-4px}
+  .tabs.sub button{font-size:13px; padding:7px 15px}
+
+  /* Panels */
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); margin-bottom:16px}
+  .panel-hd{display:flex; align-items:center; gap:10px; padding:13px 16px; border-bottom:1px solid var(--line)}
+  .panel-hd h2{font-size:14px; font-weight:600}
+  .panel-hd .count{color:var(--muted); font-size:13px; font-weight:500}
+  .panel-hd .spacer{flex:1}
+
+  /* Search */
+  .search{display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; padding:16px}
+  .field{display:flex; flex-direction:column; gap:5px}
+  .field label{font-size:12px; color:var(--muted); font-weight:500}
+  .control, .search input, .search select{height:36px; border:1px solid var(--line-strong); border-radius:6px;
+    padding:0 10px; font-family:inherit; font-size:13px; color:var(--ink); background:var(--surface)}
+  .search input[type=text]{min-width:200px}
+  .search .grow{flex:1}
+  .daterange{display:flex; align-items:center; gap:8px}
+  .daterange span{color:var(--faint)}
+  .inline{display:flex; gap:8px}
+  .btns{display:flex; gap:8px; margin-left:auto}
+  .btn{height:36px; padding:0 16px; border-radius:6px; border:1px solid var(--line-strong);
+    background:var(--surface); color:var(--ink); font-size:13px; font-weight:600}
+  .btn:hover{background:var(--surface-2)}
+  .btn.primary{background:var(--primary); border-color:var(--primary); color:#fff}
+  .btn.primary:hover{background:var(--primary-ink)}
+  .btn.ghost{border-color:transparent; background:transparent; color:var(--muted)}
+  .btn.ghost:hover{background:#EEF1F5; color:var(--ink)}
+  .btn.danger{background:var(--danger); border-color:var(--danger); color:#fff}
+  .btn:disabled{opacity:.45; cursor:not-allowed}
+  .btn.sm{height:30px; padding:0 13px; font-size:12px}
+
+  /* Table */
+  .table-scroll{overflow-x:auto}
+  table{border-collapse:collapse; width:100%; min-width:960px}
+  th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); white-space:nowrap}
+  thead th{position:sticky; top:0; background:var(--surface-2); z-index:1; font-size:12px; font-weight:600; color:var(--muted); border-bottom:1px solid var(--line-strong)}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#FAFBFC}
+  td.title{white-space:normal; min-width:200px; max-width:300px}
+  td.center{text-align:center}
+  td.empty{text-align:center; color:var(--muted); padding:48px 0; white-space:normal}
+  .mono{font-feature-settings:"tnum";font-variant-numeric:tabular-nums}
+
+  /* Pagination (참고 프로토타입 동일) */
+  .pager{display:flex; align-items:center; justify-content:flex-start; gap:16px; padding:14px 16px; border-top:1px solid var(--line); flex-wrap:wrap}
+  .pagesize{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted)}
+  .pagesize select{height:32px; border:1px solid var(--line-strong); border-radius:6px; padding:0 8px; font-family:inherit; font-size:12px; background:var(--surface); color:var(--ink)}
+  .pages{display:flex; gap:4px}
+  .pages button{min-width:32px;height:32px;border:1px solid var(--line-strong);background:var(--surface);border-radius:6px;color:var(--muted);font-size:13px}
+  .pages button.on{background:var(--primary-wash);border-color:var(--primary);color:var(--primary-ink);font-weight:700}
+  .pages button:disabled{opacity:.4;cursor:not-allowed}
+
+  /* Badges & tags */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:100px;font-size:12px;font-weight:600;line-height:1.7}
+  .badge::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+  .b-ok{background:var(--success-wash);color:#176b4a}
+  .b-fail{background:var(--danger-wash);color:#9f2f2f}
+  .b-warn{background:var(--warn-wash);color:var(--warn)}
+  .b-info{background:var(--primary-wash);color:var(--primary-ink)}
+  .b-gray{background:#EEF1F5;color:var(--muted)}
+  .tag{display:inline-block;padding:1px 8px;border-radius:5px;font-size:12px;font-weight:600;background:#EEF1F5;color:var(--muted)}
+  .tag.auto{background:var(--primary-wash);color:var(--primary-ink)}
+  .tag.manual{background:var(--success-wash);color:#176b4a}
+  .tag.ad{background:var(--ad-wash);color:var(--ad)}
+  .faint{color:var(--faint)} .muted{color:var(--muted)}
+
+  /* Modal */
+  .overlay{position:fixed; inset:0; background:rgba(20,28,38,.46); display:none; align-items:center; justify-content:center; padding:20px; z-index:50}
+  .overlay.open{display:flex}
+  .modal{background:var(--surface); border-radius:12px; box-shadow:var(--shadow); width:100%; max-width:640px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden}
+  .modal.wide{max-width:760px}
+  .modal-hd{display:flex; align-items:flex-start; gap:12px; padding:18px 20px; border-bottom:1px solid var(--line)}
+  .modal-hd .ttl{font-size:16px; font-weight:700}
+  .modal-hd .sub{font-size:12px; color:var(--muted); margin-top:3px}
+  .modal-hd .x{margin-left:auto; border:0; background:transparent; font-size:20px; color:var(--faint); line-height:1; padding:2px 6px}
+  .modal-bd{padding:20px; overflow:auto}
+  .modal-ft{display:flex; gap:8px; justify-content:flex-end; padding:14px 20px; border-top:1px solid var(--line); background:var(--surface-2)}
+
+  /* detail list */
+  .dl{display:grid; grid-template-columns:120px 1fr}
+  .dl dt{padding:9px 2px; color:var(--muted); font-size:12.5px; border-bottom:1px solid var(--line)}
+  .dl dd{padding:9px 2px; margin:0; border-bottom:1px solid var(--line); word-break:break-all}
+  .bodybox{border:1px solid var(--line); border-radius:8px; padding:16px 18px; background:#fff; max-height:340px; overflow:auto; font-size:13px; line-height:1.65}
+  .bodybox.plain{white-space:pre-wrap; background:var(--surface-2); word-break:break-all}
+  .bodybox :is(h1,h2,h3){line-height:1.3}
+  .bodybox ul,.bodybox ol{margin:8px 0; padding-left:18px}
+  .bodybox a{color:var(--primary-ink)}
+
+  /* form (등록) */
+  .filters{display:flex; flex-direction:column; gap:16px; padding:18px}
+  .frow{display:flex; flex-direction:column; gap:7px}
+  .frow .flabel{display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600}
+  .req{font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; background:var(--danger-wash); color:var(--danger)}
+  .opt{font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; background:#EEF1F5; color:var(--muted)}
+  .frow .desc{font-size:12px; color:var(--muted)}
+  .frow input, .frow select, .frow textarea{border:1px solid var(--line-strong); border-radius:6px; padding:9px 10px; font-family:inherit; font-size:13px; background:var(--surface); color:var(--ink)}
+  .frow input, .frow select{height:36px; padding:0 10px}
+  .frow textarea{min-height:96px; resize:vertical}
+  .maxw{max-width:360px}
+  .radios{display:flex; gap:8px; flex-wrap:wrap}
+  .radio{display:inline-flex; align-items:center; gap:7px; height:36px; padding:0 13px; border:1px solid var(--line-strong); border-radius:6px; font-size:13px; color:var(--ink); background:var(--surface)}
+  .radio.on{border-color:var(--primary); background:var(--primary-wash); color:var(--primary-ink); font-weight:600}
+  .radio input{accent-color:var(--primary)}
+  .channel-only{display:none; flex-direction:column; gap:16px}
+  .bytecount{font-size:12px; color:var(--muted); margin-top:5px}
+  .bytecount b{color:var(--ink)}
+
+  /* note / result */
+  .note{border-radius:8px; padding:11px 13px; font-size:12.5px; display:flex; gap:9px; line-height:1.55}
+  .note.info{background:var(--primary-wash); color:#0b6a62; border:1px solid #BFE6E1}
+  .note.warn{background:var(--warn-wash); color:#8a5f0f; border:1px solid #ECD9A8}
+  .result{border-radius:8px; padding:12px 14px; font-size:13px; margin-top:10px; display:none}
+  .result.show{display:block}
+  .result.ok{background:var(--success-wash); color:#176b4a; border:1px solid #BFE6D3}
+  .ur-line{display:flex; gap:18px; flex-wrap:wrap}
+  .ur-line b{font-size:15px}
+
+  /* dropzone */
+  .drop{display:block; width:100%; border:1.5px dashed var(--line-strong); border-radius:10px; padding:26px 20px; text-align:center; background:var(--surface-2); cursor:pointer; color:var(--muted)}
+  .drop:hover{border-color:var(--primary); background:var(--primary-wash)}
+  .drop .big{font-size:22px}
+
+  /* toast */
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(14px); opacity:0; transition:.18s;
+    background:var(--ink); color:#fff; padding:11px 18px; border-radius:8px; font-size:13px; z-index:80; box-shadow:var(--shadow); pointer-events:none}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:640px){ .search input[type=text]{min-width:0} }
+</style>
+</head>
+<body>
+
+<div class="appbar">
+  <div class="brand"><span class="dot"></span>연수원 3.0 <small>Admin</small></div>
+  <div class="crumb">알림 관리 › <b id="crumbLeaf">알림 이력</b></div>
+  <div class="spacer"></div>
+  <div class="demo"><span class="tag">프로토타입</span> showcaseall · 최인화</div>
+</div>
+
+<div class="wrap">
+  <div class="tabs">
+    <button id="tab-history" class="on" onclick="switchMain('history')">알림 이력</button>
+    <button id="tab-send" onclick="switchMain('send')">알림 발송</button>
+  </div>
+
+  <!-- ===================== 알림 이력 ===================== -->
+  <div id="view-history">
+    <div class="panel">
+      <div class="panel-hd"><h2>검색</h2></div>
+      <div class="search">
+        <div class="field">
+          <label>발송일</label>
+          <div class="daterange"><input id="hf-from" type="date" class="control" value="2026-10-15"><span>~</span><input id="hf-to" type="date" class="control" value="2026-10-22"></div>
+        </div>
+        <div class="field">
+          <label>발송 방식</label>
+          <select id="hf-way" class="control"><option>전체</option><option>자동</option><option>수동</option></select>
+        </div>
+        <div class="field">
+          <label>알림 성격</label>
+          <select id="hf-char" class="control"><option>전체</option><option>정보성</option><option>광고성</option></select>
+        </div>
+        <div class="field">
+          <label>채널</label>
+          <select id="hf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>푸시</option><option>알림함</option></select>
+        </div>
+        <div class="field grow">
+          <label>검색어</label>
+          <div class="inline">
+            <select id="hf-kind" class="control" style="width:160px"><option>전체</option><option>이름</option><option>수신 로그인 ID</option><option>수신 이메일</option><option>수신 휴대폰번호</option></select>
+            <input id="hf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchHist()">
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn primary" onclick="doSearchHist()">검색</button>
+          <button class="btn" onclick="resetHist()">초기화</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hd"><h2>목록</h2><span class="count" id="hist-count">총 0건</span></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr>
+            <th>방식</th><th>성격</th><th>채널</th><th>발송 제목</th><th>수신자</th><th>소속</th><th>수신 주소</th><th>발송일시</th><th>상태</th><th>발송 등록</th><th class="center">재발송</th>
+          </tr></thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="hist-pager">
+        <label class="pagesize">노출 건수
+          <select id="hist-size" onchange="changeHistSize()">
+            <option value="30">30건</option><option value="50" selected>50건</option><option value="100">100건</option><option value="200">200건</option>
+          </select>
+        </label>
+        <div class="pages" id="hist-pages"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== 알림 발송 ===================== -->
+  <div id="view-send" hidden>
+    <!-- 발송 목록 -->
+    <div id="send-list">
+      <div class="panel">
+        <div class="panel-hd"><h2>검색</h2></div>
+        <div class="search">
+          <div class="field"><label>발송일</label>
+            <div class="daterange"><input id="sf-from" type="date" class="control" value="2026-10-01"><span>~</span><input id="sf-to" type="date" class="control" value="2026-10-22"></div></div>
+          <div class="field"><label>채널</label><select id="sf-ch" class="control"><option>전체</option><option>이메일</option><option>문자</option></select></div>
+          <div class="field"><label>성격</label><select id="sf-char" class="control"><option>전체</option><option>정보성</option><option>광고성</option></select></div>
+          <div class="field"><label>발송 시점</label><select id="sf-when" class="control"><option>전체</option><option>즉시</option><option>예약</option></select></div>
+          <div class="field"><label>발송 상태</label><select id="sf-st" class="control"><option>전체</option><option>예약</option><option>발송중</option><option>성공</option><option>실패</option><option>취소</option></select></div>
+          <div class="field grow"><label>검색어</label>
+            <div class="inline"><select id="sf-kind" class="control" style="width:120px"><option>제목</option><option>등록자</option></select><input id="sf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchSend()"></div></div>
+          <div class="btns"><button class="btn primary" onclick="doSearchSend()">검색</button><button class="btn" onclick="resetSend()">초기화</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><h2>발송 목록</h2><span class="count" id="send-count">총 0건</span><div class="spacer"></div><button class="btn sm" onclick="sendTab('bulk')">+ 일괄 등록</button><button class="btn primary sm" onclick="sendTab('reg')">+ 발송 등록</button></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>방식</th><th>성격</th><th>채널</th><th>발송 제목</th><th>대상 수</th><th>발송 시점</th><th>상태</th><th>발송일시</th><th>발송 등록자</th>
+            </tr></thead>
+            <tbody id="send-body"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="send-pager">
+          <label class="pagesize">노출 건수
+            <select id="send-size" onchange="changeSendSize()">
+              <option value="30">30건</option><option value="50" selected>50건</option><option value="100">100건</option><option value="200">200건</option>
+            </select>
+          </label>
+          <div class="pages" id="send-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 발송 등록 -->
+    <div id="send-reg" hidden>
+      <div class="panel" style="max-width:860px">
+        <div class="panel-hd"><button class="btn ghost sm" onclick="sendTab('list')">← 목록</button><h2>발송 등록</h2></div>
+        <div class="filters">
+          <div class="frow">
+            <div class="flabel">알림 성격 <span class="req">필수</span></div>
+            <div class="radios">
+              <label class="radio on" onclick="setChar(this,'info')"><input type="radio" name="char" checked> 정보성</label>
+              <label class="radio" onclick="setChar(this,'ad')"><input type="radio" name="char"> 광고성</label>
+            </div>
+            <div class="note warn" id="ad-note" style="display:none"><span>⚠️</span><div>광고성은 채널별 수신 동의자에게만 발송(미동의·수신거부 자동 제외) · 발송 시간 <b>08:00~21:00</b> 제한 · 제목/본문에 <b>(광고)</b> 및 <b>무료 수신거부</b> 표기 필수</div></div>
+          </div>
+
+          <div class="frow">
+            <div class="flabel">발송 채널 <span class="req">필수</span></div>
+            <div class="radios">
+              <label class="radio on" onclick="setChannel(this,'mail')"><input type="radio" name="ch" checked> 이메일</label>
+              <label class="radio" onclick="setChannel(this,'sms')"><input type="radio" name="ch"> 문자</label>
+            </div>
+          </div>
+
+          <!-- 메일 -->
+          <div class="channel-only" data-ch="mail" style="display:flex">
+            <div class="frow"><div class="flabel">발신 주소 <span class="req">필수</span></div>
+              <select class="maxw" id="reg-mail-from"><option>labs@hunet.co.kr</option><option>noreply@hunet.co.kr</option><option>labs30@hunet.co.kr</option></select></div>
+            <div class="frow"><div class="flabel">발송 제목 <span class="req">필수</span></div>
+              <input type="text" id="reg-mail-subject" oninput="validateReg()" placeholder="예: [안내] 시스템 점검 안내"></div>
+            <div class="frow"><div class="flabel">발송 본문 <span class="req">필수</span></div>
+              <textarea id="reg-mail-body" oninput="validateReg()" placeholder="본문을 입력하세요. (HTML 에디터)"></textarea></div>
+          </div>
+
+          <!-- 문자 -->
+          <div class="channel-only" data-ch="sms">
+            <div class="frow"><div class="flabel">발신번호 <span class="req">필수</span></div>
+              <select class="maxw" style="max-width:220px" id="reg-sms-from"><option>1644-1941</option></select>
+              <div class="desc">발신번호 사전등록제 — 등록된 번호 중 선택합니다.</div></div>
+            <div class="frow"><div class="flabel">메시지 유형</div>
+              <div><span class="tag" id="msgtype">SMS</span> <span class="desc" style="margin-left:6px">본문 90byte 초과 시 LMS 자동 전환 · 이미지 첨부 시 MMS</span></div></div>
+            <div class="frow"><div class="flabel">발송 제목 <span class="opt">선택</span></div>
+              <input type="text" placeholder="LMS · MMS만 입력 (SMS는 제목 없음)"><div class="desc">SMS는 제목이 전송되지 않습니다.</div></div>
+            <div class="frow"><div class="flabel">발송 본문 <span class="req">필수</span></div>
+              <textarea id="smsbody" oninput="countByte();validateReg()" placeholder="문자 본문을 입력하세요"></textarea>
+              <div class="bytecount"><b id="bytenow">0</b> byte · 유형 <b id="bytetype">SMS</b> (SMS 90 / LMS 2,000 byte 기준)</div></div>
+            <div class="frow"><div class="flabel">이미지 첨부 <span class="opt">MMS</span></div>
+              <div><button class="btn sm" onclick="document.getElementById('msgtype').textContent='MMS';document.getElementById('bytetype').textContent='MMS';toast('이미지 첨부 시 MMS로 발송됩니다')">이미지 선택</button></div></div>
+          </div>
+
+          <!-- 수신 대상 -->
+          <div class="frow"><div class="flabel">수신 대상 <span class="req">필수</span></div>
+            <div class="desc" style="margin-bottom:4px">이메일 채널은 <b>이메일 주소</b>, 문자 채널은 <b>휴대폰번호</b> 열을 업로드합니다.</div>
+            <div style="margin-bottom:8px"><button class="btn sm" onclick="dlTemplate()">📥 업로드 템플릿</button></div>
+            <label class="drop"><input type="file" accept=".xlsx,.xls,.csv" hidden onchange="fakeUpload(this,'reg')">
+              <div class="big">📄</div><div><b>엑셀 파일 선택</b> 또는 이곳에 드래그</div><div class="desc">.xlsx · .xls · .csv</div></label>
+            <div class="result ok" id="ur-reg"><div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>247</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 수신 주소 없음 2</div></div></div>
+          </div>
+
+          <!-- 발송 시점 -->
+          <div class="frow"><div class="flabel">발송 시점 <span class="req">필수</span></div>
+            <div class="radios">
+              <label class="radio on" onclick="setWhen(this,'now')"><input type="radio" name="when" checked> 즉시 발송</label>
+              <label class="radio" onclick="setWhen(this,'rsv')"><input type="radio" name="when"> 예약 발송</label>
+            </div>
+            <div id="rsv-at" style="display:none;margin-top:8px"><input type="datetime-local" class="maxw" style="max-width:240px" value="2026-11-01T09:00"></div>
+          </div>
+        </div>
+        <div class="modal-ft" style="border-radius:0 0 var(--radius) var(--radius)">
+          <button class="btn ghost" onclick="sendTab('list')">취소</button>
+          <button class="btn primary" id="btn-send" disabled onclick="confirmSend()">발송하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 일괄등록 -->
+    <div id="send-bulk" hidden>
+      <div class="panel" style="max-width:860px">
+        <div class="panel-hd"><button class="btn ghost sm" onclick="sendTab('list')">← 목록</button><h2>일괄등록</h2><span class="count">여러 발송 건을 엑셀 한 파일로 한 번에 등록</span></div>
+        <div class="filters">
+          <div class="note info"><span>ℹ️</span><div>업로드 후 행별 유효성 검사를 거쳐 등록됩니다.</div></div>
+          <div class="frow"><div><button class="btn sm" onclick="dlBulkTemplate()">📥 일괄등록 템플릿</button></div></div>
+          <label class="drop"><input type="file" accept=".xlsx,.xls,.csv" hidden onchange="fakeUpload(this,'bulk')">
+            <div class="big">📄</div><div><b>엑셀 파일 선택</b> 또는 이곳에 드래그</div><div class="desc">.xlsx · .xls · .csv</div></label>
+          <div class="result ok" id="ur-bulk" style="padding:0;overflow:hidden">
+            <div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #BFE6D3"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>2</b></div><div style="color:#9f2f2f">오류 <b>1</b></div></div>
+            <div class="table-scroll"><table style="min-width:0;background:#fff">
+              <thead><tr><th>행</th><th>성격</th><th>채널</th><th>시점</th><th>제목</th><th>수신 주소</th><th>검증</th></tr></thead>
+              <tbody>
+                <tr style="cursor:default"><td>2</td><td><span class="tag">정보성</span></td><td>이메일</td><td>즉시</td><td class="title">[안내] 11월 교육 일정 공유</td><td>kim@hunet.co.kr</td><td><span class="badge b-ok">유효</span></td></tr>
+                <tr style="cursor:default"><td>3</td><td><span class="tag ad">광고성</span></td><td>문자</td><td>예약</td><td class="title">[휴넷] 신규 과정 오픈 혜택 (광고)</td><td>01012345678</td><td><span class="badge b-ok">유효</span></td></tr>
+                <tr style="cursor:default"><td>4</td><td><span class="tag">정보성</span></td><td>이메일</td><td>즉시</td><td class="title">(제목 없음)</td><td>hong[at]hunet</td><td><span class="badge b-fail">제목 누락 · 수신 이메일 형식 오류</span></td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+        <div class="modal-ft" style="border-radius:0 0 var(--radius) var(--radius)">
+          <button class="btn ghost" onclick="sendTab('list')">취소</button>
+          <button class="btn primary" id="btn-bulk" disabled onclick="toast('유효 2건을 발송 등록했습니다')">일괄 발송 등록</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 조회 모달 -->
+<div class="overlay" id="detail-ov">
+  <div class="modal">
+    <div class="modal-hd"><div><div class="ttl">알림 이력 상세</div><div class="sub">수신자 × 채널 단위 발송 1건</div></div><button class="x" onclick="closeModal('detail-ov')">×</button></div>
+    <div class="modal-bd" id="detail-body"></div>
+    <div class="modal-ft"><button class="btn ghost" onclick="closeModal('detail-ov')">닫기</button><button class="btn primary" id="detail-resend">재발송</button></div>
+  </div>
+</div>
+
+<!-- 재발송 확인 모달 -->
+<div class="overlay" id="resend-ov">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hd"><div class="ttl">재발송</div><button class="x" onclick="closeModal('resend-ov')">×</button></div>
+    <div class="modal-bd">
+      <p style="margin-bottom:10px">선택한 건을 <b id="rs-target"></b> 동일 채널로 다시 발송합니다.</p>
+      <p class="muted" style="margin:0">재발송 건은 <b>새 이력 1건</b>으로, 발송 방식 <b>‘수동’</b>으로 적재됩니다.</p>
+    </div>
+    <div class="modal-ft"><button class="btn ghost" onclick="closeModal('resend-ov')">취소</button><button class="btn primary" onclick="doResend()">재발송</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 더미 데이터 ---------- */
+const MAILBODY=`<h2 style="margin:0 0 10px;font-size:17px">[안내] 시스템 점검 안내</h2>
+<p>안녕하세요, <strong>연수원</strong>입니다.</p>
+<p>보다 안정적인 서비스 제공을 위해 아래와 같이 시스템 점검을 진행합니다.</p>
+<ul><li><b>점검 일시</b>: 2026-11-01(토) 02:00 ~ 05:00</li><li><b>영향 범위</b>: 로그인 및 학습 기능 일시 중단</li></ul>
+<p>자세한 내용은 <a href="#" onclick="return false">공지사항</a>에서 확인하실 수 있습니다.</p>
+<p style="color:#888;font-size:12px;margin-top:12px">※ 본 메일은 발신 전용입니다.</p>`;
+const MAILBODY2=`<h2 style="margin:0 0 10px;font-size:17px">10월 집합교육 사전 안내</h2>
+<p>안녕하세요. 10월 집합교육 관련 사전 안내드립니다.</p>
+<p>아래 일정과 장소를 확인하시고 준비 부탁드립니다.</p>
+<ol><li>일시: 2026-10-28(화) 13:00</li><li>장소: 본사 7층 교육장</li></ol>`;
+const base=[
+  {way:'auto',char:'info',ch:'알림함',ev:'LEARNING_STARTED',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'🌱오늘부터 학습이 가능합니다. 학습을 시작해 주세요!',name:'최인화',id:'inwha106@hunet.co.kr',org:'showcaseall',addr:'inwha106@hunet.co.kr',url:'https://golink.labs.dev.hunet.com/learning-home/74041?tenant=fronttest',st:'ok',read:'열람',by:'시스템'},
+  {way:'auto',char:'info',ch:'푸시',ev:'LEARNING_STARTED',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'오늘부터 학습이 가능합니다.',name:'김아름',id:'areum@hunet.co.kr',org:'showcaseall',addr:'areum@hunet.co.kr',url:'https://golink.labs.dev.hunet.com/learning-home/74041?tenant=showcaseall',st:'ok',read:'미열람',by:'시스템'},
+  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'[안내] 시스템 점검 안내',body:MAILBODY,name:'정승모',id:'jsm@hunet.co.kr',org:'showcaseall',addr:'jsm@hunet.co.kr',url:'–',st:'ok',read:'열람',by:'최인화'},
+  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'[안내] 시스템 점검 안내',body:MAILBODY,name:'이강은',id:'leke@hunet.co.kr',org:'showcaseall',addr:'(주소 오류)',url:'–',st:'fail',read:'–',by:'최인화',reason:'수신 주소 형식 오류'},
+  {way:'manual',char:'ad',ch:'문자',ev:'–',title:'[휴넷] 신규 과정 오픈 이벤트 (광고)',body:'[Web발신] (광고) 신규 과정 오픈! … 무료수신거부 080-000-0000',name:'박영상',id:'pys@hunet.co.kr',org:'fronttest',addr:'010-8422-5178',url:'–',st:'rsv',read:'–',by:'김아름'},
+  {way:'auto',char:'info',ch:'알림톡',ev:'ASSESSMENT_START',title:'진단평가 응시 안내',body:'진단평가가 시작되었습니다.',name:'고정희',id:'kjh@hunet.co.kr',org:'showcaseall',addr:'010-1234-5678',url:'https://golink.labs.dev.hunet.com/assessment/5521?tenant=showcaseall',st:'ok',read:'열람',by:'시스템'},
+  {way:'auto',char:'info',ch:'문자',ev:'PAYMENT_DONE',title:'수강 신청 완료 안내',body:'수강 신청이 완료되었습니다.',name:'송재혁',id:'sjh@hunet.co.kr',org:'fronttest',addr:'010-9876-5432',url:'–',st:'fail',read:'–',by:'시스템',reason:'단말 수신 거부(080 사전거부)'},
+  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'10월 집합교육 사전 안내',body:MAILBODY2,name:'이영후',id:'lyh@hunet.co.kr',org:'showcaseall',addr:'lyh@hunet.co.kr',url:'–',st:'cancel',read:'–',by:'최인화'},
+];
+const pad=n=>String(n).padStart(2,'0');
+const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+const histAll=[];
+for(let k=0;k<16;k++) base.forEach((r,j)=>{const d=new Date(2026,9,21,23,54,16);d.setMinutes(d.getMinutes()-(k*53+j*13));histAll.push({...r,dt:fmt(d)});});
+
+const sendAll=[
+  {dt:'2026-10-21 18:30:02',char:'info',ch:'이메일',title:'[안내] 시스템 점검 안내',valid:247,excl:2,st:'ok',by:'최인화',when:'now'},
+  {dt:'2026-10-20 09:00:00',char:'ad',ch:'문자',title:'[휴넷] 신규 과정 오픈 이벤트 (광고)',valid:1180,excl:20,st:'rsv',by:'김아름',when:'rsv'},
+  {dt:'2026-10-19 11:00:00',char:'info',ch:'이메일',title:'10월 집합교육 사전 안내',valid:0,excl:0,st:'cancel',by:'최인화',when:'rsv'},
+  {dt:'2026-10-18 15:20:00',char:'info',ch:'문자',title:'과정 수료 독려 안내',valid:512,excl:7,st:'ok',by:'정승모',when:'rsv'},
+  {dt:'2026-10-17 10:00:00',char:'info',ch:'이메일',title:'[긴급] 로그인 장애 복구 안내',valid:3240,excl:12,st:'ok',by:'최인화',when:'now'},
+  {dt:'2026-10-16 09:30:00',char:'info',ch:'문자',title:'설문 참여 요청',valid:880,excl:3,st:'fail',by:'김아름',when:'now'},
+];
+
+const ST={ok:['b-ok','성공'],fail:['b-fail','실패'],rsv:['b-warn','예약'],sending:['b-info','발송중'],cancel:['b-gray','취소']};
+const WAY={auto:['auto','자동'],manual:['manual','수동']};
+const CHAR={info:['','정보성'],ad:['ad','광고성']};
+const WHEN={now:'즉시',rsv:'예약'};
+const val=id=>document.getElementById(id).value;
+const canResend=s=>['ok','fail','cancel'].includes(s);
+const esc=s=>(s??'').toString().replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const badge=s=>`<span class="badge ${ST[s][0]}">${ST[s][1]}</span>`;
+const wayTag=w=>`<span class="tag ${WAY[w][0]}">${WAY[w][1]}</span>`;
+const charTag=c=>`<span class="tag ${CHAR[c][0]}">${CHAR[c][1]}</span>`;
+
+/* ---------- 페이지네이션 (참고 프로토타입 동일) ---------- */
+let histSize=50, histPage=1, histView=histAll;
+function renderHist(){
+  const total=histView.length, pages=Math.max(1,Math.ceil(total/histSize));
+  if(histPage>pages)histPage=pages;
+  const start=(histPage-1)*histSize, rows=histView.slice(start,start+histSize);
+  document.getElementById('hist-count').textContent=`총 ${total.toLocaleString()}건`;
+  document.getElementById('hist-body').innerHTML = total===0
+    ? `<tr><td class="empty" colspan="11">검색 결과가 없습니다.</td></tr>`
+    : rows.map((r,li)=>{const i=start+li;return `
+    <tr onclick="openDetail(${i})">
+      <td>${wayTag(r.way)}</td><td>${charTag(r.char)}</td><td>${r.ch}</td>
+      <td class="title">${esc(r.title)}</td><td>${esc(r.name)}</td><td>${r.org}</td>
+      <td>${esc(r.addr)}</td>
+      <td class="mono">${r.dt}</td><td>${badge(r.st)}</td><td>${esc(r.by)}</td>
+      <td class="center" onclick="event.stopPropagation()"><button class="btn sm" ${canResend(r.st)?'':'disabled'} onclick="askResend(${i})">재발송</button></td>
+    </tr>`;}).join('');
+  setPages('hist-pager','hist-pages',total,pages,histSize,histPage,'goHist');
+}
+function goHist(p){const pages=Math.ceil(histView.length/histSize);if(p<1||p>pages)return;histPage=p;renderHist();}
+function changeHistSize(){histSize=+document.getElementById('hist-size').value;histPage=1;renderHist();}
+function doSearchHist(){
+  const from=val('hf-from'), to=val('hf-to'), way=val('hf-way'), char=val('hf-char'), ch=val('hf-ch'), kind=val('hf-kind'), kw=val('hf-kw').trim().toLowerCase();
+  histView=histAll.filter(r=>{
+    const d=r.dt.slice(0,10);
+    if(from&&d<from)return false;
+    if(to&&d>to)return false;
+    if(way!=='전체'&&WAY[r.way][1]!==way)return false;
+    if(char!=='전체'&&CHAR[r.char][1]!==char)return false;
+    if(ch!=='전체'&&r.ch!==ch)return false;
+    if(kw){
+      let hay;
+      if(kind==='이름')hay=r.name;
+      else if(kind==='수신 로그인 ID')hay=r.id;
+      else if(kind==='수신 이메일'||kind==='수신 휴대폰번호')hay=r.addr;
+      else hay=[r.name,r.id,r.addr].join(' ');
+      if(!(hay||'').toLowerCase().includes(kw))return false;
+    }
+    return true;
+  });
+  histPage=1; renderHist(); toast(`검색 결과 ${histView.length.toLocaleString()}건`);
+}
+function resetHist(){
+  document.getElementById('hf-from').value='2026-10-15';
+  document.getElementById('hf-to').value='2026-10-22';
+  ['hf-way','hf-char','hf-ch','hf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  document.getElementById('hf-kw').value='';
+  histView=histAll; histPage=1; renderHist(); toast('검색 조건을 초기화했습니다');
+}
+
+let sendSize=50, sendPage=1, sendView=sendAll;
+function renderSend(){
+  const total=sendView.length, pages=Math.max(1,Math.ceil(total/sendSize));
+  if(sendPage>pages)sendPage=pages;
+  const start=(sendPage-1)*sendSize, rows=sendView.slice(start,start+sendSize);
+  document.getElementById('send-count').textContent=`총 ${total.toLocaleString()}건`;
+  document.getElementById('send-body').innerHTML = total===0
+    ? `<tr><td class="empty" colspan="9">검색 결과가 없습니다.</td></tr>`
+    : rows.map(r=>`
+    <tr style="cursor:default">
+      <td>${wayTag('manual')}</td><td>${charTag(r.char)}</td><td>${r.ch}</td>
+      <td class="title">${esc(r.title)}</td>
+      <td>${r.valid?`유효 <b>${r.valid.toLocaleString()}</b> <span class="faint">/ 제외 ${r.excl}</span>`:'<span class="faint">–</span>'}</td>
+      <td>${WHEN[r.when]}</td>
+      <td>${badge(r.st)}</td><td class="mono">${r.dt}</td><td>${esc(r.by)}</td>
+    </tr>`).join('');
+  setPages('send-pager','send-pages',total,pages,sendSize,sendPage,'goSend');
+}
+function goSend(p){const pages=Math.ceil(sendView.length/sendSize);if(p<1||p>pages)return;sendPage=p;renderSend();}
+function changeSendSize(){sendSize=+document.getElementById('send-size').value;sendPage=1;renderSend();}
+function doSearchSend(){
+  const from=val('sf-from'), to=val('sf-to'), ch=val('sf-ch'), char=val('sf-char'), when=val('sf-when'), st=val('sf-st'), kind=val('sf-kind'), kw=val('sf-kw').trim().toLowerCase();
+  sendView=sendAll.filter(r=>{
+    const d=r.dt.slice(0,10);
+    if(from&&d<from)return false;
+    if(to&&d>to)return false;
+    if(ch!=='전체'&&r.ch!==ch)return false;
+    if(char!=='전체'&&CHAR[r.char][1]!==char)return false;
+    if(when!=='전체'&&WHEN[r.when]!==when)return false;
+    if(st!=='전체'&&ST[r.st][1]!==st)return false;
+    if(kw){const hay=kind==='등록자'?r.by:r.title; if(!hay.toLowerCase().includes(kw))return false;}
+    return true;
+  });
+  sendPage=1; renderSend(); toast(`검색 결과 ${sendView.length.toLocaleString()}건`);
+}
+function resetSend(){
+  document.getElementById('sf-from').value='2026-10-01';
+  document.getElementById('sf-to').value='2026-10-22';
+  ['sf-ch','sf-char','sf-when','sf-st','sf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  document.getElementById('sf-kw').value='';
+  sendView=sendAll; sendPage=1; renderSend(); toast('검색 조건을 초기화했습니다');
+}
+
+function setPages(pagerId,pagesId,total,pages,size,cur,goFn){
+  const pager=document.getElementById(pagerId), el=document.getElementById(pagesId);
+  if(total===0){pager.style.display='none';return;}
+  pager.style.display='flex';
+  if(total<=size){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='flex';
+  let h=`<button ${cur===1?'disabled':''} onclick="${goFn}(${cur-1})">‹</button>`;
+  for(let p=1;p<=pages;p++) h+=`<button class="${p===cur?'on':''}" onclick="${goFn}(${p})">${p}</button>`;
+  h+=`<button ${cur===pages?'disabled':''} onclick="${goFn}(${cur+1})">›</button>`;
+  el.innerHTML=h;
+}
+
+/* ---------- 상세 / 재발송 ---------- */
+let targetIdx=null;
+function openDetail(i){
+  const r=histView[i]; targetIdx=i;
+  document.getElementById('detail-body').innerHTML=`
+    <dl class="dl">
+      <dt>발송 방식</dt><dd>${wayTag(r.way)}</dd>
+      <dt>알림 성격</dt><dd>${charTag(r.char)}</dd>
+      <dt>알림 채널</dt><dd>${r.ch}</dd>
+      <dt>이벤트명</dt><dd>${esc(r.ev)}</dd>
+      <dt>발송 제목</dt><dd>${esc(r.title)}</dd>
+      <dt>타겟 경로</dt><dd>${r.url==='–'?'–':`<a href="${r.url}" onclick="return false">${r.url}</a>`}</dd>
+      <dt>발송 상태</dt><dd>${badge(r.st)} ${r.reason?`<span class="faint">· ${esc(r.reason)}</span>`:''}</dd>
+      <dt>수신자 이름</dt><dd>${esc(r.name)}</dd>
+      <dt>수신자 ID</dt><dd>${esc(r.id)}</dd>
+      <dt>소속</dt><dd>${r.org}</dd>
+      <dt>수신 주소</dt><dd>${esc(r.addr)}</dd>
+      <dt>열람 상태</dt><dd>${r.read}</dd>
+      <dt>발송 등록</dt><dd>${esc(r.by)}</dd>
+      <dt>발송일시</dt><dd class="mono">${r.dt}</dd>
+    </dl>
+    <div style="margin-top:14px">
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">발송 본문${r.ch==='이메일'?' <span class="faint">(HTML)</span>':''}</div>
+      ${r.ch==='이메일' ? `<div class="bodybox">${r.body}</div>` : `<div class="bodybox plain">${esc(r.body)}</div>`}
+    </div>`;
+  const btn=document.getElementById('detail-resend');
+  if(canResend(r.st)){btn.disabled=false;btn.onclick=()=>{closeModal('detail-ov');askResend(i)};}
+  else btn.disabled=true;
+  openModal('detail-ov');
+}
+function askResend(i){targetIdx=i;const r=histView[i];document.getElementById('rs-target').textContent=`${r.name} · ${r.ch}(으)로`;openModal('resend-ov');}
+function doResend(){
+  const r=histView[targetIdx], now=fmt(new Date());
+  const nr={...r,dt:now,way:'manual',st:'ok',read:'미열람',by:'최인화',ev:'–',reason:undefined};
+  histAll.unshift(nr);
+  if(histView!==histAll) histView.unshift(nr);
+  histPage=1; renderHist(); closeModal('resend-ov'); toast('재발송 완료 · 새 이력 1건 적재(수동)');
+}
+
+/* ---------- 발송 등록 폼 ---------- */
+function setChar(el,v){document.querySelectorAll('[name=char]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.getElementById('ad-note').style.display=v==='ad'?'flex':'none';}
+function setChannel(el,v){document.querySelectorAll('[name=ch]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.querySelectorAll('.channel-only').forEach(c=>c.style.display=c.dataset.ch===v?'flex':'none');validateReg();}
+function setWhen(el,v){document.querySelectorAll('[name=when]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.getElementById('rsv-at').style.display=v==='rsv'?'block':'none';}
+function countByte(){const t=document.getElementById('smsbody').value;let b=0;for(const ch of t)b+=ch.charCodeAt(0)>127?2:1;document.getElementById('bytenow').textContent=b;const ty=b>90?'LMS':'SMS';document.getElementById('bytetype').textContent=ty;document.getElementById('msgtype').textContent=ty;}
+let regUploaded=false;
+function validateReg(){
+  let ok=regUploaded;
+  if(isMail()) ok = ok && document.getElementById('reg-mail-subject').value.trim()!=='' && document.getElementById('reg-mail-body').value.trim()!=='';
+  else ok = ok && document.getElementById('smsbody').value.trim()!=='';
+  document.getElementById('btn-send').disabled=!ok;
+}
+function fakeUpload(input,where){
+  if(!input.files.length)return;
+  document.getElementById('ur-'+where).classList.add('show');
+  toast(input.files[0].name+' 업로드 · 유효성 검사 완료');
+  if(where==='reg'){regUploaded=true;validateReg();}
+  if(where==='bulk'){document.getElementById('btn-bulk').disabled=false;}
+}
+function isMail(){return document.querySelectorAll('[name=ch]')[0].closest('.radio').classList.contains('on');}
+function dlTemplate(){const head=isMail()?'이메일주소\nhong@example.com\n':'휴대폰번호\n="01012345678"\n';blobDl(head,'수신대상_템플릿.csv');}
+function dlBulkTemplate(){
+  const header='알림 성격,알림 채널,발송 시점,발송 일시,발신 주소,발송 제목,발송 본문,수신 주소';
+  const r1='정보성,이메일,즉시,,labs@hunet.co.kr,[안내] 11월 교육 일정,본문 내용입니다.,kim@hunet.co.kr';
+  const r2='광고성,문자,예약,2026-11-01 09:00,1644-1941,(광고) 신규 과정 오픈,본문 … 무료수신거부 080-000-0000,="01012345678"';
+  blobDl(header+'\n'+r1+'\n'+r2+'\n','일괄발송_템플릿.csv');
+}
+function blobDl(text,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/csv'}));a.download=name;a.click();toast(name+' 다운로드');}
+function confirmSend(){const rsv=document.querySelectorAll('[name=when]')[1].closest('.radio').classList.contains('on');toast(rsv?'예약 발송 등록 완료':'발송 요청 완료 · 결과는 알림 이력에서 확인');setTimeout(()=>sendTab('list'),600);}
+
+/* ---------- 네비게이션 ---------- */
+function switchMain(v){
+  document.getElementById('view-history').hidden=v!=='history';
+  document.getElementById('view-send').hidden=v!=='send';
+  document.getElementById('tab-history').classList.toggle('on',v==='history');
+  document.getElementById('tab-send').classList.toggle('on',v==='send');
+  document.getElementById('crumbLeaf').textContent=v==='history'?'알림 이력':'알림 발송';
+  if(v==='send')sendTab('list');
+  window.scrollTo(0,0);
+}
+function sendTab(t){
+  ['list','reg','bulk'].forEach(x=>document.getElementById('send-'+x).hidden=x!==t);
+  if(t==='list')renderSend();
+  window.scrollTo(0,0);
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);}
+
+renderHist();renderSend();
+</script>
+</body>
+</html>
