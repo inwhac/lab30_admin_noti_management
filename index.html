@@ -197,6 +197,7 @@
 
   <!-- ===================== 알림 이력 ===================== -->
   <div id="view-history">
+    <div id="hist-main">
     <div class="panel">
       <div class="panel-hd"><h2>검색</h2></div>
       <div class="search">
@@ -205,21 +206,13 @@
           <div class="daterange"><input id="hf-from" type="date" class="control" value="2026-10-15"><span>~</span><input id="hf-to" type="date" class="control" value="2026-10-22"></div>
         </div>
         <div class="field">
-          <label>발송 방식</label>
-          <select id="hf-way" class="control"><option>전체</option><option>자동</option><option>수동</option></select>
-        </div>
-        <div class="field">
-          <label>알림 성격</label>
-          <select id="hf-char" class="control"><option>전체</option><option>정보성</option><option>광고성</option></select>
-        </div>
-        <div class="field">
           <label>채널</label>
-          <select id="hf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>푸시</option><option>알림함</option></select>
+          <select id="hf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>푸시</option></select>
         </div>
         <div class="field grow">
           <label>검색어</label>
           <div class="inline">
-            <select id="hf-kind" class="control" style="width:160px"><option>전체</option><option>이름</option><option>수신 로그인 ID</option><option>수신 이메일</option><option>수신 휴대폰번호</option></select>
+            <select id="hf-kind" class="control" style="width:160px"><option>전체</option><option>수신 주소</option></select>
             <input id="hf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchHist()">
           </div>
         </div>
@@ -235,7 +228,7 @@
       <div class="table-scroll">
         <table>
           <thead><tr>
-            <th>방식</th><th>성격</th><th>채널</th><th>발송 제목</th><th>수신자</th><th>소속</th><th>수신 주소</th><th>발송일시</th><th>상태</th><th>발송 등록</th><th class="center">재발송</th>
+            <th>채널</th><th>발송 제목</th><th>수신자 소속</th><th>수신 주소</th><th>발송일시</th><th>상태</th><th class="center">재발송</th>
           </tr></thead>
           <tbody id="hist-body"></tbody>
         </table>
@@ -247,6 +240,14 @@
           </select>
         </label>
         <div class="pages" id="hist-pages"></div>
+      </div>
+    </div>
+    </div><!-- /hist-main -->
+
+    <div id="hist-detail" hidden>
+      <div class="panel">
+        <div class="panel-hd"><button class="btn ghost sm" onclick="closeDetail()">← 목록</button><h2>알림 이력 상세</h2><div class="spacer"></div><button class="btn primary sm" id="detail-resend">재발송</button></div>
+        <div style="padding:18px" id="detail-body"></div>
       </div>
     </div>
   </div>
@@ -261,7 +262,6 @@
           <div class="field"><label>발송일</label>
             <div class="daterange"><input id="sf-from" type="date" class="control" value="2026-10-01"><span>~</span><input id="sf-to" type="date" class="control" value="2026-10-22"></div></div>
           <div class="field"><label>채널</label><select id="sf-ch" class="control"><option>전체</option><option>이메일</option><option>문자</option></select></div>
-          <div class="field"><label>성격</label><select id="sf-char" class="control"><option>전체</option><option>정보성</option><option>광고성</option></select></div>
           <div class="field"><label>발송 시점</label><select id="sf-when" class="control"><option>전체</option><option>즉시</option><option>예약</option></select></div>
           <div class="field"><label>발송 상태</label><select id="sf-st" class="control"><option>전체</option><option>예약</option><option>발송중</option><option>성공</option><option>실패</option><option>취소</option></select></div>
           <div class="field grow"><label>검색어</label>
@@ -274,7 +274,7 @@
         <div class="table-scroll">
           <table>
             <thead><tr>
-              <th>방식</th><th>성격</th><th>채널</th><th>발송 제목</th><th>대상 수</th><th>발송 시점</th><th>상태</th><th>발송일시</th><th>발송 등록자</th>
+              <th>채널</th><th>발송 제목</th><th>대상 수</th><th>발송 시점</th><th>상태</th><th>발송일시</th><th>발송 등록자</th>
             </tr></thead>
             <tbody id="send-body"></tbody>
           </table>
@@ -296,15 +296,6 @@
         <div class="panel-hd"><button class="btn ghost sm" onclick="sendTab('list')">← 목록</button><h2>발송 등록</h2></div>
         <div class="filters">
           <div class="frow">
-            <div class="flabel">알림 성격 <span class="req">필수</span></div>
-            <div class="radios">
-              <label class="radio on" onclick="setChar(this,'info')"><input type="radio" name="char" checked> 정보성</label>
-              <label class="radio" onclick="setChar(this,'ad')"><input type="radio" name="char"> 광고성</label>
-            </div>
-            <div class="note warn" id="ad-note" style="display:none"><span>⚠️</span><div>광고성은 채널별 수신 동의자에게만 발송(미동의·수신거부 자동 제외) · 발송 시간 <b>08:00~21:00</b> 제한 · 제목/본문에 <b>(광고)</b> 및 <b>무료 수신거부</b> 표기 필수</div></div>
-          </div>
-
-          <div class="frow">
             <div class="flabel">발송 채널 <span class="req">필수</span></div>
             <div class="radios">
               <label class="radio on" onclick="setChannel(this,'mail')"><input type="radio" name="ch" checked> 이메일</label>
@@ -324,27 +315,35 @@
 
           <!-- 문자 -->
           <div class="channel-only" data-ch="sms">
+            <div class="frow"><div class="flabel">발송 형태 <span class="req">필수</span></div>
+              <div class="radios">
+                <label class="radio on" onclick="setSmsType(this,'SMS')"><input type="radio" name="smstype" checked> SMS</label>
+                <label class="radio" onclick="setSmsType(this,'LMS')"><input type="radio" name="smstype"> LMS</label>
+              </div></div>
             <div class="frow"><div class="flabel">발신번호 <span class="req">필수</span></div>
-              <select class="maxw" style="max-width:220px" id="reg-sms-from"><option>1644-1941</option></select>
-              <div class="desc">발신번호 사전등록제 — 등록된 번호 중 선택합니다.</div></div>
-            <div class="frow"><div class="flabel">메시지 유형</div>
-              <div><span class="tag" id="msgtype">SMS</span> <span class="desc" style="margin-left:6px">본문 90byte 초과 시 LMS 자동 전환 · 이미지 첨부 시 MMS</span></div></div>
+              <select class="maxw" style="max-width:220px" id="reg-sms-from"><option>1644-1941</option></select></div>
             <div class="frow"><div class="flabel">발송 제목 <span class="opt">선택</span></div>
-              <input type="text" placeholder="LMS · MMS만 입력 (SMS는 제목 없음)"><div class="desc">SMS는 제목이 전송되지 않습니다.</div></div>
+              <input type="text" placeholder="LMS는 입력, SMS는 관리 용도(미발송)"><div class="desc">SMS 제목은 사용자에게 전송되지 않고 관리 용도로만 사용됩니다.</div></div>
             <div class="frow"><div class="flabel">발송 본문 <span class="req">필수</span></div>
               <textarea id="smsbody" oninput="countByte();validateReg()" placeholder="문자 본문을 입력하세요"></textarea>
-              <div class="bytecount"><b id="bytenow">0</b> byte · 유형 <b id="bytetype">SMS</b> (SMS 90 / LMS 2,000 byte 기준)</div></div>
-            <div class="frow"><div class="flabel">이미지 첨부 <span class="opt">MMS</span></div>
-              <div><button class="btn sm" onclick="document.getElementById('msgtype').textContent='MMS';document.getElementById('bytetype').textContent='MMS';toast('이미지 첨부 시 MMS로 발송됩니다')">이미지 선택</button></div></div>
+              <div class="bytecount"><b id="bytenow">0</b> byte · 선택 형태 <b id="bytetype">SMS</b> (SMS 90 / LMS 2,000 byte 상한)</div></div>
           </div>
 
           <!-- 수신 대상 -->
           <div class="frow"><div class="flabel">수신 대상 <span class="req">필수</span></div>
-            <div class="desc" style="margin-bottom:4px">이메일 채널은 <b>이메일 주소</b>, 문자 채널은 <b>휴대폰번호</b> 열을 업로드합니다.</div>
+            <div class="desc" style="margin-bottom:4px">이메일 채널은 <b>이메일 주소</b>, 문자 채널은 <b>휴대폰번호</b> 열을 업로드합니다. 업로드 후 <b>회원 정보 존재 여부</b>를 검증해 유효/제외 건을 표시합니다.</div>
             <div style="margin-bottom:8px"><button class="btn sm" onclick="dlTemplate()">📥 업로드 템플릿</button></div>
             <label class="drop"><input type="file" accept=".xlsx,.xls,.csv" hidden onchange="fakeUpload(this,'reg')">
               <div class="big">📄</div><div><b>엑셀 파일 선택</b> 또는 이곳에 드래그</div><div class="desc">.xlsx · .xls · .csv</div></label>
-            <div class="result ok" id="ur-reg"><div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>247</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 수신 주소 없음 2</div></div></div>
+            <div id="sim-reg" style="display:none;margin-top:12px">
+              <div class="desc" style="margin-bottom:6px">유효성 검토 결과 — 케이스 미리보기</div>
+              <div class="radios">
+                <label class="radio on" onclick="simCase('reg','pass',this)">전체 유효</label>
+                <label class="radio" onclick="simCase('reg','partial',this)">일부 오류</label>
+                <label class="radio" onclick="simCase('reg','allfail',this)">전체 오류</label>
+              </div>
+              <div id="ur-reg" style="margin-top:10px"></div>
+            </div>
           </div>
 
           <!-- 발송 시점 -->
@@ -358,7 +357,7 @@
         </div>
         <div class="modal-ft" style="border-radius:0 0 var(--radius) var(--radius)">
           <button class="btn ghost" onclick="sendTab('list')">취소</button>
-          <button class="btn primary" id="btn-send" disabled onclick="confirmSend()">발송하기</button>
+          <button class="btn primary" id="btn-send" disabled onclick="askSend('reg')">발송하기</button>
         </div>
       </div>
     </div>
@@ -372,33 +371,22 @@
           <div class="frow"><div><button class="btn sm" onclick="dlBulkTemplate()">📥 일괄등록 템플릿</button></div></div>
           <label class="drop"><input type="file" accept=".xlsx,.xls,.csv" hidden onchange="fakeUpload(this,'bulk')">
             <div class="big">📄</div><div><b>엑셀 파일 선택</b> 또는 이곳에 드래그</div><div class="desc">.xlsx · .xls · .csv</div></label>
-          <div class="result ok" id="ur-bulk" style="padding:0;overflow:hidden">
-            <div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #BFE6D3"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>2</b></div><div style="color:#9f2f2f">오류 <b>1</b></div></div>
-            <div class="table-scroll"><table style="min-width:0;background:#fff">
-              <thead><tr><th>행</th><th>성격</th><th>채널</th><th>시점</th><th>제목</th><th>수신 주소</th><th>검증</th></tr></thead>
-              <tbody>
-                <tr style="cursor:default"><td>2</td><td><span class="tag">정보성</span></td><td>이메일</td><td>즉시</td><td class="title">[안내] 11월 교육 일정 공유</td><td>kim@hunet.co.kr</td><td><span class="badge b-ok">유효</span></td></tr>
-                <tr style="cursor:default"><td>3</td><td><span class="tag ad">광고성</span></td><td>문자</td><td>예약</td><td class="title">[휴넷] 신규 과정 오픈 혜택 (광고)</td><td>01012345678</td><td><span class="badge b-ok">유효</span></td></tr>
-                <tr style="cursor:default"><td>4</td><td><span class="tag">정보성</span></td><td>이메일</td><td>즉시</td><td class="title">(제목 없음)</td><td>hong[at]hunet</td><td><span class="badge b-fail">제목 누락 · 수신 이메일 형식 오류</span></td></tr>
-              </tbody>
-            </table></div>
+          <div id="sim-bulk" style="display:none;margin-top:12px">
+            <div class="desc" style="margin-bottom:6px">유효성 검토 결과 — 케이스 미리보기</div>
+            <div class="radios">
+              <label class="radio on" onclick="simCase('bulk','pass',this)">전체 유효</label>
+              <label class="radio" onclick="simCase('bulk','partial',this)">일부 오류</label>
+              <label class="radio" onclick="simCase('bulk','allfail',this)">전체 오류</label>
+            </div>
+            <div id="ur-bulk" style="margin-top:10px"></div>
           </div>
         </div>
         <div class="modal-ft" style="border-radius:0 0 var(--radius) var(--radius)">
           <button class="btn ghost" onclick="sendTab('list')">취소</button>
-          <button class="btn primary" id="btn-bulk" disabled onclick="toast('유효 2건을 발송 등록했습니다')">일괄 발송 등록</button>
+          <button class="btn primary" id="btn-bulk" disabled onclick="askSend('bulk')">일괄 발송 등록</button>
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- 상세 조회 모달 -->
-<div class="overlay" id="detail-ov">
-  <div class="modal">
-    <div class="modal-hd"><div><div class="ttl">알림 이력 상세</div><div class="sub">수신자 × 채널 단위 발송 1건</div></div><button class="x" onclick="closeModal('detail-ov')">×</button></div>
-    <div class="modal-bd" id="detail-body"></div>
-    <div class="modal-ft"><button class="btn ghost" onclick="closeModal('detail-ov')">닫기</button><button class="btn primary" id="detail-resend">재발송</button></div>
   </div>
 </div>
 
@@ -407,36 +395,104 @@
   <div class="modal" style="max-width:460px">
     <div class="modal-hd"><div class="ttl">재발송</div><button class="x" onclick="closeModal('resend-ov')">×</button></div>
     <div class="modal-bd">
-      <p style="margin-bottom:10px">선택한 건을 <b id="rs-target"></b> 동일 채널로 다시 발송합니다.</p>
-      <p class="muted" style="margin:0">재발송 건은 <b>새 이력 1건</b>으로, 발송 방식 <b>‘수동’</b>으로 적재됩니다.</p>
+      <p style="margin:0">선택한 건을 <b id="rs-target"></b> 동일 채널로 다시 발송합니다.</p>
     </div>
     <div class="modal-ft"><button class="btn ghost" onclick="closeModal('resend-ov')">취소</button><button class="btn primary" onclick="doResend()">재발송</button></div>
   </div>
 </div>
 
+<!-- 발송 확인 모달 -->
+<div class="overlay" id="confirm-ov">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hd"><div class="ttl">발송 확인</div><button class="x" onclick="closeModal('confirm-ov')">×</button></div>
+    <div class="modal-bd">
+      <p style="margin:0 0 8px;font-weight:600">이대로 발송하시겠습니까?</p>
+      <p class="muted" style="margin:0">알림 발송 시 취소하거나 되돌릴 수 없습니다. 유효성 검토에서 실패한 건은 발송에서 제외됩니다.</p>
+    </div>
+    <div class="modal-ft"><button class="btn ghost" onclick="closeModal('confirm-ov')">취소</button><button class="btn primary" id="confirm-send-btn">발송</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<script type="text/template" id="mailtpl">
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style type="text/css">
+  * { font-family: 'Pretendard','Noto Sans KR','Malgun Gothic','dotum',sans-serif; }
+  body { margin:0; padding:0; }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#ffffff;">
+<table border="0" cellpadding="0" cellspacing="0" width="700" align="center" bgcolor="#ffffff">
+  <tr><td style="padding:0 32px;">
+    <table width="100%" align="center" border="0" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 auto;">
+      <tr><td align="center" bgcolor="#ffffff" style="padding:32px 20px 64px;">
+        <div style="font-size:22px;font-weight:800;color:#171719;">hunet</div>
+      </td></tr>
+      <tr><td style="padding-bottom:32px;font-size:28px;font-weight:bold;line-height:1.4;letter-spacing:-0.7px;color:rgba(23,23,25,0.8);">학습 시작 안내</td></tr>
+      <tr><td style="padding-bottom:32px;font-size:14px;line-height:1.6;letter-spacing:-0.5px;color:rgba(23,23,25,0.8);">
+        안녕하세요! <strong>$학습자명$</strong>님,<br>
+        <strong>$과정명$</strong>의 학습이 시작되었습니다.<br>
+        아래 교육일정과 수료기준을 확인하시고, 첫 학습을 시작해 주세요.
+      </td></tr>
+      <tr><td style="padding-bottom:16px;font-size:20px;font-weight:bold;line-height:1.4;letter-spacing:-0.7px;color:#171719;">로그인 안내</td></tr>
+      <tr><td>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #e1e2e4;border-radius:8px;overflow:hidden;">
+          <tr><td bgcolor="#f7f7f8" width="100" style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">연수원 주소</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$http://365.labs.hunet.com$</td></tr>
+          <tr><td bgcolor="#f7f7f8" width="100" style="padding:16px 20px;font-size:14px;color:rgba(23,23,25,0.6);">아이디</td><td style="padding:16px 20px;font-size:16px;color:#171719;">$test@hunet.co.kr$</td></tr>
+        </table>
+        <div style="margin-top:16px;font-size:14px;color:#171719;">기업 단체 수강일 경우, 초기 비밀번호는 이메일 입니다. <a href="#" onclick="return false" style="margin-left:10px;">연수원 로그인</a></div>
+        <div style="margin-top:6px;font-size:14px;color:#171719;">비밀번호가 기억나지 않으세요? <a href="#" onclick="return false" style="margin-left:10px;">비밀번호 찾기</a></div>
+      </td></tr>
+      <tr><td style="padding-top:32px;padding-bottom:16px;font-size:20px;font-weight:bold;color:#171719;">과정 정보</td></tr>
+      <tr><td>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #e1e2e4;border-radius:8px;overflow:hidden;">
+          <tr><td bgcolor="#f7f7f8" width="20%" align="center" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">과정명</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$괴테, 문학을 넘어 삶을 말하다$</td></tr>
+          <tr><td bgcolor="#f7f7f8" width="20%" align="center" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">과정 학습기간</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$2025.01.01 ~ 2025.12.31$</td></tr>
+          <tr><td bgcolor="#f7f7f8" width="20%" align="center" style="padding:12px 20px;font-size:14px;color:rgba(23,23,25,0.6);">과정 복습기간</td><td style="padding:16px 20px;font-size:16px;color:#171719;">$2025.01.01 ~ 2025.12.31$</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding-top:32px;padding-bottom:16px;font-size:20px;font-weight:bold;color:#171719;">교육 일정 및 수료 기준</td></tr>
+      <tr><td style="padding-bottom:16px;font-size:14px;color:rgba(23,23,25,0.8);"><b>$코스명$</b> (남은 기간 : $25$일)</td></tr>
+      <tr><td>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #e1e2e4;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+          <tr><td bgcolor="#f7f7f8" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">평가항목</td><td bgcolor="#f7f7f8" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">필수여부</td><td bgcolor="#f7f7f8" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">평가비중</td><td bgcolor="#f7f7f8" style="padding:12px 20px;border-bottom:1px solid #eaebec;font-size:14px;color:rgba(23,23,25,0.6);">수료기준</td></tr>
+          <tr><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$평가명 1$</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$필수$</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$0$%</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$80$% 이상</td></tr>
+          <tr><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$평가명 2$</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$필수$</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$0$%</td><td style="padding:16px 20px;border-bottom:1px solid #eaebec;font-size:16px;color:#171719;">$80$% 이상</td></tr>
+          <tr><td bgcolor="#f7f7f8" style="padding:16px 20px;font-size:16px;font-weight:600;color:#171719;">총점</td><td bgcolor="#f7f7f8" style="padding:16px 20px;">&nbsp;</td><td bgcolor="#f7f7f8" style="padding:16px 20px;font-size:16px;font-weight:600;color:#171719;">$60$점 이상</td><td bgcolor="#f7f7f8" style="padding:16px 20px;">&nbsp;</td></tr>
+        </table>
+      </td></tr>
+      <tr><td style="padding-top:8px;padding-bottom:32px;font-size:14px;color:rgba(23,23,25,0.8);">본 과정은 모바일로 학습, 복습이 가능한 과정으로 PC 또는 모바일로 자유롭게 학습하실 수 있습니다.</td></tr>
+      <tr><td align="center" style="padding-bottom:32px;">
+        <a href="#" onclick="return false" style="display:inline-block;padding:16px 24px;background:#0066ff;color:#ffffff;border-radius:12px;font-size:16px;font-weight:500;text-decoration:none;">강의실 바로가기</a>
+      </td></tr>
+      <tr><td style="padding-bottom:16px;font-size:12px;line-height:1.6;color:rgba(23,23,25,0.45);">
+        본 메일은 국민건강보험공단(연수원명) 임직원님께 발송되는 발송전용 메일로 회신되지 않습니다.<br>
+        본 메일은 정보통신망 이용촉진 및 정보보호 등에 관한 법률 시행규칙에 의거하여 발송되었습니다.
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+</script>
 
 <script>
 /* ---------- 더미 데이터 ---------- */
-const MAILBODY=`<h2 style="margin:0 0 10px;font-size:17px">[안내] 시스템 점검 안내</h2>
-<p>안녕하세요, <strong>연수원</strong>입니다.</p>
-<p>보다 안정적인 서비스 제공을 위해 아래와 같이 시스템 점검을 진행합니다.</p>
-<ul><li><b>점검 일시</b>: 2026-11-01(토) 02:00 ~ 05:00</li><li><b>영향 범위</b>: 로그인 및 학습 기능 일시 중단</li></ul>
-<p>자세한 내용은 <a href="#" onclick="return false">공지사항</a>에서 확인하실 수 있습니다.</p>
-<p style="color:#888;font-size:12px;margin-top:12px">※ 본 메일은 발신 전용입니다.</p>`;
-const MAILBODY2=`<h2 style="margin:0 0 10px;font-size:17px">10월 집합교육 사전 안내</h2>
-<p>안녕하세요. 10월 집합교육 관련 사전 안내드립니다.</p>
-<p>아래 일정과 장소를 확인하시고 준비 부탁드립니다.</p>
-<ol><li>일시: 2026-10-28(화) 13:00</li><li>장소: 본사 7층 교육장</li></ol>`;
+const MAILHTML = document.getElementById('mailtpl').innerHTML;
 const base=[
-  {way:'auto',char:'info',ch:'알림함',ev:'LEARNING_STARTED',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'🌱오늘부터 학습이 가능합니다. 학습을 시작해 주세요!',name:'최인화',id:'inwha106@hunet.co.kr',org:'showcaseall',addr:'inwha106@hunet.co.kr',url:'https://golink.labs.dev.hunet.com/learning-home/74041?tenant=fronttest',st:'ok',read:'열람',by:'시스템'},
-  {way:'auto',char:'info',ch:'푸시',ev:'LEARNING_STARTED',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'오늘부터 학습이 가능합니다.',name:'김아름',id:'areum@hunet.co.kr',org:'showcaseall',addr:'areum@hunet.co.kr',url:'https://golink.labs.dev.hunet.com/learning-home/74041?tenant=showcaseall',st:'ok',read:'미열람',by:'시스템'},
-  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'[안내] 시스템 점검 안내',body:MAILBODY,name:'정승모',id:'jsm@hunet.co.kr',org:'showcaseall',addr:'jsm@hunet.co.kr',url:'–',st:'ok',read:'열람',by:'최인화'},
-  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'[안내] 시스템 점검 안내',body:MAILBODY,name:'이강은',id:'leke@hunet.co.kr',org:'showcaseall',addr:'(주소 오류)',url:'–',st:'fail',read:'–',by:'최인화',reason:'수신 주소 형식 오류'},
-  {way:'manual',char:'ad',ch:'문자',ev:'–',title:'[휴넷] 신규 과정 오픈 이벤트 (광고)',body:'[Web발신] (광고) 신규 과정 오픈! … 무료수신거부 080-000-0000',name:'박영상',id:'pys@hunet.co.kr',org:'fronttest',addr:'010-8422-5178',url:'–',st:'rsv',read:'–',by:'김아름'},
-  {way:'auto',char:'info',ch:'알림톡',ev:'ASSESSMENT_START',title:'진단평가 응시 안내',body:'진단평가가 시작되었습니다.',name:'고정희',id:'kjh@hunet.co.kr',org:'showcaseall',addr:'010-1234-5678',url:'https://golink.labs.dev.hunet.com/assessment/5521?tenant=showcaseall',st:'ok',read:'열람',by:'시스템'},
-  {way:'auto',char:'info',ch:'문자',ev:'PAYMENT_DONE',title:'수강 신청 완료 안내',body:'수강 신청이 완료되었습니다.',name:'송재혁',id:'sjh@hunet.co.kr',org:'fronttest',addr:'010-9876-5432',url:'–',st:'fail',read:'–',by:'시스템',reason:'단말 수신 거부(080 사전거부)'},
-  {way:'manual',char:'info',ch:'이메일',ev:'–',title:'10월 집합교육 사전 안내',body:MAILBODY2,name:'이영후',id:'lyh@hunet.co.kr',org:'showcaseall',addr:'lyh@hunet.co.kr',url:'–',st:'cancel',read:'–',by:'최인화'},
+  {ch:'푸시',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'오늘부터 학습이 가능합니다.',org:'showcaseall',addr:'ePq7a1k9Xz3b…(디바이스토큰)',st:'ok'},
+  {ch:'알림톡',title:'진단평가 응시 안내',body:'진단평가가 시작되었습니다.',org:'showcaseall',addr:'010-1234-5678',st:'ok'},
+  {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'jsm@hunet.co.kr',st:'ok'},
+  {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'leke@hunet.co.kr',st:'fail'},
+  {ch:'문자',title:'수강 신청 완료 안내',body:'수강 신청이 완료되었습니다.',org:'fronttest',addr:'010-9876-5432',st:'fail'},
+  {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'lyh@hunet.co.kr',st:'ok'},
+  {ch:'푸시',title:'신규 과정 오픈 안내',body:'새로운 과정이 오픈되었습니다.',org:'fronttest',addr:'dK3nQ8yTz9fW…(디바이스토큰)',st:'ok'},
+  {ch:'문자',title:'과정 수료 독려 안내',body:'수료 기한이 임박했습니다.',org:'showcaseall',addr:'010-8422-5178',st:'ok'},
 ];
 const pad=n=>String(n).padStart(2,'0');
 const fmt=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
@@ -471,13 +527,13 @@ function renderHist(){
   const start=(histPage-1)*histSize, rows=histView.slice(start,start+histSize);
   document.getElementById('hist-count').textContent=`총 ${total.toLocaleString()}건`;
   document.getElementById('hist-body').innerHTML = total===0
-    ? `<tr><td class="empty" colspan="11">검색 결과가 없습니다.</td></tr>`
+    ? `<tr><td class="empty" colspan="7">검색 결과가 없습니다.</td></tr>`
     : rows.map((r,li)=>{const i=start+li;return `
     <tr onclick="openDetail(${i})">
-      <td>${wayTag(r.way)}</td><td>${charTag(r.char)}</td><td>${r.ch}</td>
-      <td class="title">${esc(r.title)}</td><td>${esc(r.name)}</td><td>${r.org}</td>
+      <td>${r.ch}</td>
+      <td class="title">${esc(r.title)}</td><td>${r.org}</td>
       <td>${esc(r.addr)}</td>
-      <td class="mono">${r.dt}</td><td>${badge(r.st)}</td><td>${esc(r.by)}</td>
+      <td class="mono">${r.dt}</td><td>${badge(r.st)}</td>
       <td class="center" onclick="event.stopPropagation()"><button class="btn sm" ${canResend(r.st)?'':'disabled'} onclick="askResend(${i})">재발송</button></td>
     </tr>`;}).join('');
   setPages('hist-pager','hist-pages',total,pages,histSize,histPage,'goHist');
@@ -485,20 +541,14 @@ function renderHist(){
 function goHist(p){const pages=Math.ceil(histView.length/histSize);if(p<1||p>pages)return;histPage=p;renderHist();}
 function changeHistSize(){histSize=+document.getElementById('hist-size').value;histPage=1;renderHist();}
 function doSearchHist(){
-  const from=val('hf-from'), to=val('hf-to'), way=val('hf-way'), char=val('hf-char'), ch=val('hf-ch'), kind=val('hf-kind'), kw=val('hf-kw').trim().toLowerCase();
+  const from=val('hf-from'), to=val('hf-to'), ch=val('hf-ch'), kind=val('hf-kind'), kw=val('hf-kw').trim().toLowerCase();
   histView=histAll.filter(r=>{
     const d=r.dt.slice(0,10);
     if(from&&d<from)return false;
     if(to&&d>to)return false;
-    if(way!=='전체'&&WAY[r.way][1]!==way)return false;
-    if(char!=='전체'&&CHAR[r.char][1]!==char)return false;
     if(ch!=='전체'&&r.ch!==ch)return false;
     if(kw){
-      let hay;
-      if(kind==='이름')hay=r.name;
-      else if(kind==='수신 로그인 ID')hay=r.id;
-      else if(kind==='수신 이메일'||kind==='수신 휴대폰번호')hay=r.addr;
-      else hay=[r.name,r.id,r.addr].join(' ');
+      const hay=kind==='수신 주소'?r.addr:[r.title,r.org,r.addr].join(' ');
       if(!(hay||'').toLowerCase().includes(kw))return false;
     }
     return true;
@@ -508,7 +558,7 @@ function doSearchHist(){
 function resetHist(){
   document.getElementById('hf-from').value='2026-10-15';
   document.getElementById('hf-to').value='2026-10-22';
-  ['hf-way','hf-char','hf-ch','hf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['hf-ch','hf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
   document.getElementById('hf-kw').value='';
   histView=histAll; histPage=1; renderHist(); toast('검색 조건을 초기화했습니다');
 }
@@ -520,10 +570,10 @@ function renderSend(){
   const start=(sendPage-1)*sendSize, rows=sendView.slice(start,start+sendSize);
   document.getElementById('send-count').textContent=`총 ${total.toLocaleString()}건`;
   document.getElementById('send-body').innerHTML = total===0
-    ? `<tr><td class="empty" colspan="9">검색 결과가 없습니다.</td></tr>`
+    ? `<tr><td class="empty" colspan="7">검색 결과가 없습니다.</td></tr>`
     : rows.map(r=>`
     <tr style="cursor:default">
-      <td>${wayTag('manual')}</td><td>${charTag(r.char)}</td><td>${r.ch}</td>
+      <td>${r.ch}</td>
       <td class="title">${esc(r.title)}</td>
       <td>${r.valid?`유효 <b>${r.valid.toLocaleString()}</b> <span class="faint">/ 제외 ${r.excl}</span>`:'<span class="faint">–</span>'}</td>
       <td>${WHEN[r.when]}</td>
@@ -534,13 +584,12 @@ function renderSend(){
 function goSend(p){const pages=Math.ceil(sendView.length/sendSize);if(p<1||p>pages)return;sendPage=p;renderSend();}
 function changeSendSize(){sendSize=+document.getElementById('send-size').value;sendPage=1;renderSend();}
 function doSearchSend(){
-  const from=val('sf-from'), to=val('sf-to'), ch=val('sf-ch'), char=val('sf-char'), when=val('sf-when'), st=val('sf-st'), kind=val('sf-kind'), kw=val('sf-kw').trim().toLowerCase();
+  const from=val('sf-from'), to=val('sf-to'), ch=val('sf-ch'), when=val('sf-when'), st=val('sf-st'), kind=val('sf-kind'), kw=val('sf-kw').trim().toLowerCase();
   sendView=sendAll.filter(r=>{
     const d=r.dt.slice(0,10);
     if(from&&d<from)return false;
     if(to&&d>to)return false;
     if(ch!=='전체'&&r.ch!==ch)return false;
-    if(char!=='전체'&&CHAR[r.char][1]!==char)return false;
     if(when!=='전체'&&WHEN[r.when]!==when)return false;
     if(st!=='전체'&&ST[r.st][1]!==st)return false;
     if(kw){const hay=kind==='등록자'?r.by:r.title; if(!hay.toLowerCase().includes(kw))return false;}
@@ -551,7 +600,7 @@ function doSearchSend(){
 function resetSend(){
   document.getElementById('sf-from').value='2026-10-01';
   document.getElementById('sf-to').value='2026-10-22';
-  ['sf-ch','sf-char','sf-when','sf-st','sf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['sf-ch','sf-when','sf-st','sf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
   document.getElementById('sf-kw').value='';
   sendView=sendAll; sendPage=1; renderSend(); toast('검색 조건을 초기화했습니다');
 }
@@ -572,46 +621,47 @@ function setPages(pagerId,pagesId,total,pages,size,cur,goFn){
 let targetIdx=null;
 function openDetail(i){
   const r=histView[i]; targetIdx=i;
+  const isMail=r.ch==='이메일';
   document.getElementById('detail-body').innerHTML=`
     <dl class="dl">
-      <dt>발송 방식</dt><dd>${wayTag(r.way)}</dd>
-      <dt>알림 성격</dt><dd>${charTag(r.char)}</dd>
       <dt>알림 채널</dt><dd>${r.ch}</dd>
-      <dt>이벤트명</dt><dd>${esc(r.ev)}</dd>
       <dt>발송 제목</dt><dd>${esc(r.title)}</dd>
-      <dt>타겟 경로</dt><dd>${r.url==='–'?'–':`<a href="${r.url}" onclick="return false">${r.url}</a>`}</dd>
-      <dt>발송 상태</dt><dd>${badge(r.st)} ${r.reason?`<span class="faint">· ${esc(r.reason)}</span>`:''}</dd>
-      <dt>수신자 이름</dt><dd>${esc(r.name)}</dd>
-      <dt>수신자 ID</dt><dd>${esc(r.id)}</dd>
-      <dt>소속</dt><dd>${r.org}</dd>
+      <dt>발송 상태</dt><dd>${badge(r.st)}</dd>
+      <dt>수신자 소속</dt><dd>${r.org}</dd>
       <dt>수신 주소</dt><dd>${esc(r.addr)}</dd>
-      <dt>열람 상태</dt><dd>${r.read}</dd>
-      <dt>발송 등록</dt><dd>${esc(r.by)}</dd>
       <dt>발송일시</dt><dd class="mono">${r.dt}</dd>
     </dl>
-    <div style="margin-top:14px">
-      <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">발송 본문${r.ch==='이메일'?' <span class="faint">(HTML)</span>':''}</div>
-      ${r.ch==='이메일' ? `<div class="bodybox">${r.body}</div>` : `<div class="bodybox plain">${esc(r.body)}</div>`}
+    <div style="margin-top:16px">
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">발송 본문${isMail?' <span class="faint">(HTML 메일)</span>':''}</div>
+      ${isMail ? `<iframe id="mailframe" style="width:100%;height:720px;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe>` : `<div class="bodybox plain">${esc(r.body)}</div>`}
     </div>`;
+  if(isMail) document.getElementById('mailframe').srcdoc = MAILHTML;
   const btn=document.getElementById('detail-resend');
-  if(canResend(r.st)){btn.disabled=false;btn.onclick=()=>{closeModal('detail-ov');askResend(i)};}
+  if(canResend(r.st)){btn.disabled=false;btn.onclick=()=>askResend(i);}
   else btn.disabled=true;
-  openModal('detail-ov');
+  document.getElementById('hist-main').hidden=true;
+  document.getElementById('hist-detail').hidden=false;
+  window.scrollTo(0,0);
 }
-function askResend(i){targetIdx=i;const r=histView[i];document.getElementById('rs-target').textContent=`${r.name} · ${r.ch}(으)로`;openModal('resend-ov');}
+function closeDetail(){
+  document.getElementById('hist-detail').hidden=true;
+  document.getElementById('hist-main').hidden=false;
+  window.scrollTo(0,0);
+}
+function askResend(i){targetIdx=i;const r=histView[i];document.getElementById('rs-target').textContent=`${r.addr} · ${r.ch}(으)로`;openModal('resend-ov');}
 function doResend(){
   const r=histView[targetIdx], now=fmt(new Date());
-  const nr={...r,dt:now,way:'manual',st:'ok',read:'미열람',by:'최인화',ev:'–',reason:undefined};
+  const nr={...r,dt:now,st:'ok',reason:undefined};
   histAll.unshift(nr);
   if(histView!==histAll) histView.unshift(nr);
-  histPage=1; renderHist(); closeModal('resend-ov'); toast('재발송 완료 · 새 이력 1건 적재(수동)');
+  histPage=1; renderHist(); closeModal('resend-ov'); closeDetail(); toast('재발송 완료 · 새 이력 1건 적재(기존 이력은 유지)');
 }
 
 /* ---------- 발송 등록 폼 ---------- */
-function setChar(el,v){document.querySelectorAll('[name=char]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.getElementById('ad-note').style.display=v==='ad'?'flex':'none';}
 function setChannel(el,v){document.querySelectorAll('[name=ch]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.querySelectorAll('.channel-only').forEach(c=>c.style.display=c.dataset.ch===v?'flex':'none');validateReg();}
 function setWhen(el,v){document.querySelectorAll('[name=when]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.getElementById('rsv-at').style.display=v==='rsv'?'block':'none';}
-function countByte(){const t=document.getElementById('smsbody').value;let b=0;for(const ch of t)b+=ch.charCodeAt(0)>127?2:1;document.getElementById('bytenow').textContent=b;const ty=b>90?'LMS':'SMS';document.getElementById('bytetype').textContent=ty;document.getElementById('msgtype').textContent=ty;}
+function setSmsType(el,v){document.querySelectorAll('[name=smstype]').forEach(r=>r.closest('.radio').classList.remove('on'));el.classList.add('on');document.getElementById('bytetype').textContent=v;}
+function countByte(){const t=document.getElementById('smsbody').value;let b=0;for(const ch of t)b+=ch.charCodeAt(0)>127?2:1;document.getElementById('bytenow').textContent=b;}
 let regUploaded=false;
 function validateReg(){
   let ok=regUploaded;
@@ -619,19 +669,66 @@ function validateReg(){
   else ok = ok && document.getElementById('smsbody').value.trim()!=='';
   document.getElementById('btn-send').disabled=!ok;
 }
+/* 유효성 검토 결과 — 케이스별 미리보기 (ok=발송 가능 여부) */
+const regRow=(n,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${a}</td><td>${v}</td></tr>`;
+const OKV='<span class="badge b-ok">유효</span>', NOMEM='<span class="badge b-fail">회원 정보 미존재</span>';
+const bulkRow=(n,ch,ty,wh,t,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${ch}</td><td>${ty}</td><td>${wh}</td><td class="title">${t}</td><td>${a}</td><td>${v}</td></tr>`;
+const regBox=(c,s,html)=>`<div style="border:1px solid ${c};background:${s};border-radius:8px;padding:12px 14px;overflow:hidden">${html}</div>`;
+const bulkBox=(c,s,html)=>`<div style="border:1px solid ${c};background:${s};border-radius:8px;overflow:hidden">${html}</div>`;
+const regTbl=rows=>`<div class="table-scroll" style="margin-top:10px"><table style="min-width:0;background:#fff;font-size:12px"><thead><tr><th>행</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+const bulkTbl=rows=>`<div class="table-scroll"><table style="min-width:0;background:#fff"><thead><tr><th>행</th><th>채널</th><th>발송 형태</th><th>시점</th><th>제목</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+const VRES={
+  reg:{
+    pass:{ok:true, html:regBox('#BFE6D3','var(--success-wash)',
+      `<div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>249</b></div><div>제외 <b>0</b></div></div>
+       <div class="muted" style="margin-top:6px">모든 수신 주소가 회원 정보에 존재합니다. → 전체 발송 가능</div>`)},
+    partial:{ok:true, html:regBox('#f0cfcf','var(--danger-wash)',
+      `<div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>247</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 회원 정보 미존재</div></div>
+       ${regTbl(regRow('248','unknown01@hunet.co.kr',NOMEM)+regRow('249','01000000000',NOMEM))}
+       <div class="muted" style="margin-top:8px">제외된 2건은 발송되지 않으며, 유효 247건만 발송됩니다.</div>`)},
+    allfail:{ok:false, html:regBox('#f0cfcf','var(--danger-wash)',
+      `<div class="ur-line"><div>총 <b>2</b></div><div style="color:#176b4a">유효 <b>0</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 회원 정보 미존재</div></div>
+       ${regTbl(regRow('1','unknown01@hunet.co.kr',NOMEM)+regRow('2','01000000000',NOMEM))}
+       <div class="muted" style="margin-top:8px;color:#9f2f2f">발송 가능한 유효 건이 없습니다. → <b>발송 불가</b></div>`)}
+  },
+  bulk:{
+    pass:{ok:true, html:bulkBox('#BFE6D3','var(--success-wash)',
+      `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #BFE6D3"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>3</b></div><div>오류 <b>0</b></div></div>
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','01012345678',OKV)+bulkRow('4','이메일','–','즉시','[공지] 12월 교육 일정 안내','park@hunet.co.kr',OKV))}`)},
+    partial:{ok:true, html:bulkBox('#f0cfcf','var(--danger-wash)',
+      `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #f0cfcf"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>2</b></div><div style="color:#9f2f2f">오류 <b>1</b></div></div>
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','01012345678',OKV)+bulkRow('4','이메일','–','즉시','(제목 없음)','hong[at]hunet','<span class="badge b-fail">이메일 제목 필수 · 수신 이메일 형식 오류</span>'))}
+       <div class="muted" style="padding:10px 14px">오류 1건은 발송에서 제외되며, 유효 2건만 등록됩니다.</div>`)},
+    allfail:{ok:false, html:bulkBox('#f0cfcf','var(--danger-wash)',
+      `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #f0cfcf"><div>발송 건 <b>2</b></div><div style="color:#176b4a">유효 <b>0</b></div><div style="color:#9f2f2f">오류 <b>2</b></div></div>
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','(제목 없음)','hong[at]hunet','<span class="badge b-fail">이메일 제목 필수 · 수신 이메일 형식 오류</span>')+bulkRow('3','문자','–','즉시','미입력','01000000000','<span class="badge b-fail">발송 형태 누락 · 회원 정보 미존재</span>'))}
+       <div class="muted" style="padding:10px 14px;color:#9f2f2f">등록 가능한 유효 건이 없습니다. → <b>발송 불가</b></div>`)}
+  }
+};
 function fakeUpload(input,where){
   if(!input.files.length)return;
-  document.getElementById('ur-'+where).classList.add('show');
-  toast(input.files[0].name+' 업로드 · 유효성 검사 완료');
-  if(where==='reg'){regUploaded=true;validateReg();}
-  if(where==='bulk'){document.getElementById('btn-bulk').disabled=false;}
+  document.getElementById('sim-'+where).style.display='block';
+  simCase(where,'pass',document.querySelector('#sim-'+where+' .radio'));
+  toast(input.files[0].name+' 업로드 · 유효성 검토 완료');
 }
+function simCase(where,kase,el){
+  const wrap=el.closest('.radios'); wrap.querySelectorAll('.radio').forEach(r=>r.classList.remove('on')); el.classList.add('on');
+  const c=VRES[where][kase];
+  document.getElementById('ur-'+where).innerHTML=c.html;
+  if(where==='reg'){regUploaded=c.ok;validateReg();}
+  else document.getElementById('btn-bulk').disabled=!c.ok;
+}
+function askSend(where){
+  document.getElementById('confirm-send-btn').onclick=()=>{closeModal('confirm-ov'); where==='reg'?confirmSend():bulkRegister();};
+  openModal('confirm-ov');
+}
+function bulkRegister(){toast('유효 건을 발송 등록했습니다 (제외 건 발송 안 됨)');setTimeout(()=>sendTab('list'),600);}
 function isMail(){return document.querySelectorAll('[name=ch]')[0].closest('.radio').classList.contains('on');}
 function dlTemplate(){const head=isMail()?'이메일주소\nhong@example.com\n':'휴대폰번호\n="01012345678"\n';blobDl(head,'수신대상_템플릿.csv');}
 function dlBulkTemplate(){
-  const header='알림 성격,알림 채널,발송 시점,발송 일시,발신 주소,발송 제목,발송 본문,수신 주소';
-  const r1='정보성,이메일,즉시,,labs@hunet.co.kr,[안내] 11월 교육 일정,본문 내용입니다.,kim@hunet.co.kr';
-  const r2='광고성,문자,예약,2026-11-01 09:00,1644-1941,(광고) 신규 과정 오픈,본문 … 무료수신거부 080-000-0000,="01012345678"';
+  const header='알림 채널,발송 형태,발송 시점,발송 일시,발신 주소,발송 제목,발송 본문,수신 주소';
+  const r1='이메일,,즉시,,labs@hunet.co.kr,[안내] 11월 교육 일정,본문 내용입니다.,kim@hunet.co.kr';
+  const r2='문자,LMS,예약,2026-11-01 09:00,1644-1941,과정 수료 안내,본문 내용입니다.,="01012345678"';
   blobDl(header+'\n'+r1+'\n'+r2+'\n','일괄발송_템플릿.csv');
 }
 function blobDl(text,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/csv'}));a.download=name;a.click();toast(name+' 다운로드');}
@@ -644,6 +741,7 @@ function switchMain(v){
   document.getElementById('tab-history').classList.toggle('on',v==='history');
   document.getElementById('tab-send').classList.toggle('on',v==='send');
   document.getElementById('crumbLeaf').textContent=v==='history'?'알림 이력':'알림 발송';
+  if(v==='history')closeDetail();
   if(v==='send')sendTab('list');
   window.scrollTo(0,0);
 }
