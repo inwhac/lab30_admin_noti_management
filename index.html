@@ -193,6 +193,7 @@
   <div class="tabs">
     <button id="tab-history" class="on" onclick="switchMain('history')">알림 이력</button>
     <button id="tab-send" onclick="switchMain('send')">알림 발송</button>
+    <button id="tab-reserve" onclick="switchMain('reserve')">발송 예약 조회</button>
   </div>
 
   <!-- ===================== 알림 이력 ===================== -->
@@ -207,7 +208,7 @@
         </div>
         <div class="field">
           <label>채널</label>
-          <select id="hf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>푸시</option></select>
+          <select id="hf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>앱푸시</option><option>웹푸시</option></select>
         </div>
         <div class="field grow">
           <label>검색어</label>
@@ -388,6 +389,62 @@
       </div>
     </div>
   </div>
+
+  <!-- ===================== 발송 예약 조회 ===================== -->
+  <div id="view-reserve" hidden>
+    <div id="rsv-main">
+      <div class="panel">
+        <div class="panel-hd"><h2>검색</h2></div>
+        <div class="search">
+          <div class="field"><label>예약 일시</label>
+            <div class="daterange"><input id="rf-from" type="date" class="control" value="2026-10-28"><span>~</span><input id="rf-to" type="date" class="control" value="2026-11-30"></div></div>
+          <div class="field"><label>채널</label>
+            <select id="rf-ch" class="control"><option>전체</option><option>이메일</option><option>알림톡</option><option>문자</option><option>앱푸시</option><option>웹푸시</option></select></div>
+          <div class="field"><label>예약 상태</label>
+            <select id="rf-st" class="control"><option>전체</option><option>대기</option><option>취소</option></select></div>
+          <div class="field grow"><label>검색어</label>
+            <div class="inline"><select class="control" style="width:120px"><option>제목</option></select><input id="rf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchRsv()"></div></div>
+          <div class="btns"><button class="btn primary" onclick="doSearchRsv()">검색</button><button class="btn" onclick="resetRsv()">초기화</button></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hd"><h2>목록 <span class="faint" style="font-weight:400;margin-left:4px" id="rsv-count">총 0건</span></h2></div>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>예약 일시</th><th>채널</th><th>발송 제목</th><th>대상 연수원</th><th>대상 수</th><th>예약 상태</th><th class="center">취소</th>
+            </tr></thead>
+            <tbody id="rsv-body"></tbody>
+          </table>
+        </div>
+        <div class="pager" id="rsv-pager">
+          <label class="pagesize">노출 건수
+            <select id="rsv-size" onchange="changeRsvSize()"><option value="30">30건</option><option value="50" selected>50건</option><option value="100">100건</option><option value="200">200건</option></select>
+          </label>
+          <div class="pages" id="rsv-pages"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="rsv-detail" hidden>
+      <div class="panel">
+        <div class="panel-hd"><button class="btn ghost sm" onclick="closeRsvDetail()">← 목록</button><h2>발송 예약 상세</h2><div class="spacer"></div><button class="btn danger sm" id="rsv-detail-cancel">예약 취소</button></div>
+        <div style="padding:18px" id="rsv-detail-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 예약 취소 확인 모달 -->
+<div class="overlay" id="cancel-ov">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-hd"><div class="ttl">예약 취소</div><button class="x" onclick="closeModal('cancel-ov')">×</button></div>
+    <div class="modal-bd">
+      <p style="margin:0 0 8px;font-weight:600">이 예약 발송을 취소하시겠습니까?</p>
+      <p class="muted" style="margin:0">취소 시 해당 예약은 발송되지 않으며 되돌릴 수 없습니다.</p>
+    </div>
+    <div class="modal-ft"><button class="btn ghost" onclick="closeModal('cancel-ov')">닫기</button><button class="btn danger" id="cancel-confirm-btn">예약 취소</button></div>
+  </div>
 </div>
 
 <!-- 재발송 확인 모달 -->
@@ -485,13 +542,13 @@
 /* ---------- 더미 데이터 ---------- */
 const MAILHTML = document.getElementById('mailtpl').innerHTML;
 const base=[
-  {ch:'푸시',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'오늘부터 학습이 가능합니다.',org:'showcaseall',addr:'ePq7a1k9Xz3b…(디바이스토큰)',st:'ok'},
+  {ch:'앱푸시',title:'AI 시대, 성과를 이끌어 내는 Business Analytics',body:'오늘부터 학습이 가능합니다.',org:'showcaseall',addr:'ePq7a1k9Xz3b…(토큰)',st:'ok'},
   {ch:'알림톡',title:'진단평가 응시 안내',body:'진단평가가 시작되었습니다.',org:'showcaseall',addr:'010-1234-5678',st:'ok'},
   {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'jsm@hunet.co.kr',st:'ok'},
   {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'leke@hunet.co.kr',st:'fail'},
   {ch:'문자',title:'수강 신청 완료 안내',body:'수강 신청이 완료되었습니다.',org:'fronttest',addr:'010-9876-5432',st:'fail'},
   {ch:'이메일',title:'학습 시작 안내',body:'',org:'showcaseall',addr:'lyh@hunet.co.kr',st:'ok'},
-  {ch:'푸시',title:'신규 과정 오픈 안내',body:'새로운 과정이 오픈되었습니다.',org:'fronttest',addr:'dK3nQ8yTz9fW…(디바이스토큰)',st:'ok'},
+  {ch:'웹푸시',title:'신규 과정 오픈 안내',body:'새로운 과정이 오픈되었습니다.',org:'fronttest',addr:'dK3nQ8yTz9fW…(토큰)',st:'ok'},
   {ch:'문자',title:'과정 수료 독려 안내',body:'수료 기한이 임박했습니다.',org:'showcaseall',addr:'010-8422-5178',st:'ok'},
 ];
 const pad=n=>String(n).padStart(2,'0');
@@ -738,10 +795,13 @@ function confirmSend(){const rsv=document.querySelectorAll('[name=when]')[1].clo
 function switchMain(v){
   document.getElementById('view-history').hidden=v!=='history';
   document.getElementById('view-send').hidden=v!=='send';
+  document.getElementById('view-reserve').hidden=v!=='reserve';
   document.getElementById('tab-history').classList.toggle('on',v==='history');
   document.getElementById('tab-send').classList.toggle('on',v==='send');
-  document.getElementById('crumbLeaf').textContent=v==='history'?'알림 이력':'알림 발송';
+  document.getElementById('tab-reserve').classList.toggle('on',v==='reserve');
+  document.getElementById('crumbLeaf').textContent={history:'알림 이력',send:'알림 발송',reserve:'발송 예약 조회'}[v];
   if(v==='history')closeDetail();
+  if(v==='reserve'){closeRsvDetail();renderRsv();}
   if(v==='send')sendTab('list');
   window.scrollTo(0,0);
 }
@@ -757,7 +817,97 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 let toastT;
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);}
 
-renderHist();renderSend();
+/* ---------- 발송 예약 조회 ---------- */
+const RST={wait:['b-warn','대기'],cancel:['b-gray','취소']};
+const rsvBadge=s=>`<span class="badge ${RST[s][0]}">${RST[s][1]}</span>`;
+const canCancel=s=>s==='wait';
+const reserveAll=[
+  {dt:'2026-11-01 09:00',ch:'문자',title:'[안내] 시스템 점검 안내',body:'안녕하세요, 아래와 같이 시스템 점검을 진행합니다 …',org:'showcaseall',cnt:1180,st:'wait'},
+  {dt:'2026-11-01 10:00',ch:'이메일',title:'11월 교육 일정 공유',body:'',org:'showcaseall',cnt:320,st:'wait'},
+  {dt:'2026-11-02 08:30',ch:'앱푸시',title:'신규 과정 오픈 알림',body:'새로운 과정이 오픈되었습니다.',org:'fronttest',cnt:5400,st:'wait'},
+  {dt:'2026-11-03 14:00',ch:'알림톡',title:'수료 독려 안내',body:'수료 기한이 임박했습니다.',org:'showcaseall',cnt:880,st:'wait'},
+  {dt:'2026-11-05 11:00',ch:'문자',title:'설문 참여 요청',body:'설문에 참여해 주세요.',org:'fronttest',cnt:640,st:'wait'},
+  {dt:'2026-11-06 09:00',ch:'웹푸시',title:'이벤트 당첨 안내',body:'이벤트에 당첨되셨습니다.',org:'showcaseall',cnt:120,st:'wait'},
+  {dt:'2026-10-30 09:00',ch:'이메일',title:'10월 집합교육 사전 안내',body:'',org:'showcaseall',cnt:210,st:'cancel'},
+  {dt:'2026-10-29 15:00',ch:'문자',title:'긴급 점검 재안내',body:'점검 일정이 변경되었습니다.',org:'fronttest',cnt:300,st:'cancel'},
+];
+let rsvSize=50, rsvPage=1, rsvView=reserveAll;
+function renderRsv(){
+  const total=rsvView.length, pages=Math.max(1,Math.ceil(total/rsvSize));
+  if(rsvPage>pages)rsvPage=pages;
+  const start=(rsvPage-1)*rsvSize, rows=rsvView.slice(start,start+rsvSize);
+  document.getElementById('rsv-count').textContent=`총 ${total.toLocaleString()}건`;
+  document.getElementById('rsv-body').innerHTML = total===0
+    ? `<tr><td class="empty" colspan="7">검색 결과가 없습니다.</td></tr>`
+    : rows.map((r,li)=>{const i=start+li;return `
+    <tr onclick="openRsvDetail(${i})">
+      <td class="mono">${r.dt}</td><td>${r.ch}</td>
+      <td class="title">${esc(r.title)}</td><td>${r.org}</td>
+      <td>${r.cnt.toLocaleString()}명</td><td>${rsvBadge(r.st)}</td>
+      <td class="center" onclick="event.stopPropagation()"><button class="btn sm" ${canCancel(r.st)?'':'disabled'} onclick="askCancel(${i})">취소</button></td>
+    </tr>`;}).join('');
+  setPages('rsv-pager','rsv-pages',total,pages,rsvSize,rsvPage,'goRsv');
+}
+function goRsv(p){const pages=Math.ceil(rsvView.length/rsvSize);if(p<1||p>pages)return;rsvPage=p;renderRsv();}
+function changeRsvSize(){rsvSize=+document.getElementById('rsv-size').value;rsvPage=1;renderRsv();}
+function doSearchRsv(){
+  const from=val('rf-from'),to=val('rf-to'),ch=val('rf-ch'),st=val('rf-st'),kw=val('rf-kw').trim().toLowerCase();
+  rsvView=reserveAll.filter(r=>{
+    const d=r.dt.slice(0,10);
+    if(from&&d<from)return false;
+    if(to&&d>to)return false;
+    if(ch!=='전체'&&r.ch!==ch)return false;
+    if(st!=='전체'&&RST[r.st][1]!==st)return false;
+    if(kw&&!r.title.toLowerCase().includes(kw))return false;
+    return true;
+  });
+  rsvPage=1; renderRsv(); toast(`검색 결과 ${rsvView.length.toLocaleString()}건`);
+}
+function resetRsv(){
+  document.getElementById('rf-from').value='2026-10-28';
+  document.getElementById('rf-to').value='2026-11-30';
+  ['rf-ch','rf-st'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  document.getElementById('rf-kw').value='';
+  rsvView=reserveAll; rsvPage=1; renderRsv(); toast('검색 조건을 초기화했습니다');
+}
+let rsvIdx=null;
+function openRsvDetail(i){
+  const r=rsvView[i]; rsvIdx=i;
+  const isMail=r.ch==='이메일';
+  document.getElementById('rsv-detail-body').innerHTML=`
+    <dl class="dl">
+      <dt>예약 상태</dt><dd>${rsvBadge(r.st)}</dd>
+      <dt>알림 채널</dt><dd>${r.ch}</dd>
+      <dt>발송 제목</dt><dd>${esc(r.title)}</dd>
+      <dt>대상 연수원</dt><dd>${r.org}</dd>
+      <dt>대상 수</dt><dd>${r.cnt.toLocaleString()}명</dd>
+      <dt>예약 일시</dt><dd class="mono">${r.dt}</dd>
+    </dl>
+    <div style="margin-top:16px">
+      <div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">발송 본문${isMail?' <span class="faint">(HTML 메일)</span>':''}</div>
+      ${isMail ? `<iframe id="rsvframe" style="width:100%;height:720px;border:1px solid var(--line);border-radius:8px;background:#fff"></iframe>` : `<div class="bodybox plain">${esc(r.body)}</div>`}
+    </div>`;
+  if(isMail) document.getElementById('rsvframe').srcdoc = MAILHTML;
+  const btn=document.getElementById('rsv-detail-cancel');
+  if(canCancel(r.st)){btn.style.display='';btn.disabled=false;btn.onclick=()=>askCancel(i);}
+  else btn.style.display='none';
+  document.getElementById('rsv-main').hidden=true;
+  document.getElementById('rsv-detail').hidden=false;
+  window.scrollTo(0,0);
+}
+function closeRsvDetail(){
+  document.getElementById('rsv-detail').hidden=true;
+  document.getElementById('rsv-main').hidden=false;
+  window.scrollTo(0,0);
+}
+let cancelIdx=null;
+function askCancel(i){cancelIdx=i;document.getElementById('cancel-confirm-btn').onclick=doCancel;openModal('cancel-ov');}
+function doCancel(){
+  rsvView[cancelIdx].st='cancel';
+  closeModal('cancel-ov'); closeRsvDetail(); renderRsv(); toast('예약이 취소되었습니다 (상태: 취소)');
+}
+
+renderHist();renderSend();renderRsv();
 </script>
 </body>
 </html>
