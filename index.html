@@ -332,7 +332,7 @@
 
           <!-- 수신 대상 -->
           <div class="frow"><div class="flabel">수신 대상 <span class="req">필수</span></div>
-            <div class="desc" style="margin-bottom:4px">이메일 채널은 <b>이메일 주소</b>, 문자 채널은 <b>휴대폰번호</b> 열을 업로드합니다. 업로드 후 <b>회원 정보 존재 여부</b>를 검증해 유효/제외 건을 표시합니다.</div>
+            <div class="desc" style="margin-bottom:4px">업로드 템플릿은 <b>소속 연수원(테넌트ID)</b> + <b>수신 주소</b>(이메일 채널=이메일 주소 / 문자 채널=휴대폰번호) 2열입니다. 업로드 후 행별로 <b>해당 소속 연수원 내 회원 존재 여부</b>를 검증해 유효/제외 건을 표시합니다.</div>
             <div style="margin-bottom:8px"><button class="btn sm" onclick="dlTemplate()">📥 업로드 템플릿</button></div>
             <label class="drop"><input type="file" accept=".xlsx,.xls,.csv" hidden onchange="fakeUpload(this,'reg')">
               <div class="big">📄</div><div><b>엑셀 파일 선택</b> 또는 이곳에 드래그</div><div class="desc">.xlsx · .xls · .csv</div></label>
@@ -725,38 +725,38 @@ function validateReg(){
   document.getElementById('btn-send').disabled=!ok;
 }
 /* 유효성 검토 결과 — 케이스별 미리보기 (ok=발송 가능 여부) */
-const regRow=(n,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${a}</td><td>${v}</td></tr>`;
-const OKV='<span class="badge b-ok">유효</span>', NOMEM='<span class="badge b-fail">회원 정보 미존재</span>';
-const bulkRow=(n,ch,ty,wh,t,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${ch}</td><td>${ty}</td><td>${wh}</td><td class="title">${t}</td><td>${a}</td><td>${v}</td></tr>`;
+const regRow=(n,org,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${org}</td><td>${a}</td><td>${v}</td></tr>`;
+const OKV='<span class="badge b-ok">유효</span>', NOMEM='<span class="badge b-fail">연수원 내 미존재</span>';
+const bulkRow=(n,ch,ty,wh,t,org,a,v)=>`<tr style="cursor:default"><td>${n}</td><td>${ch}</td><td>${ty}</td><td>${wh}</td><td class="title">${t}</td><td>${org}</td><td>${a}</td><td>${v}</td></tr>`;
 const regBox=(c,s,html)=>`<div style="border:1px solid ${c};background:${s};border-radius:8px;padding:12px 14px;overflow:hidden">${html}</div>`;
 const bulkBox=(c,s,html)=>`<div style="border:1px solid ${c};background:${s};border-radius:8px;overflow:hidden">${html}</div>`;
-const regTbl=rows=>`<div class="table-scroll" style="margin-top:10px"><table style="min-width:0;background:#fff;font-size:12px"><thead><tr><th>행</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-const bulkTbl=rows=>`<div class="table-scroll"><table style="min-width:0;background:#fff"><thead><tr><th>행</th><th>채널</th><th>발송 형태</th><th>시점</th><th>제목</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+const regTbl=rows=>`<div class="table-scroll" style="margin-top:10px"><table style="min-width:0;background:#fff;font-size:12px"><thead><tr><th>행</th><th>소속 연수원</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+const bulkTbl=rows=>`<div class="table-scroll"><table style="min-width:0;background:#fff"><thead><tr><th>행</th><th>채널</th><th>발송 형태</th><th>시점</th><th>제목</th><th>소속 연수원</th><th>수신 주소</th><th>검증</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 const VRES={
   reg:{
     pass:{ok:true, html:regBox('#BFE6D3','var(--success-wash)',
       `<div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>249</b></div><div>제외 <b>0</b></div></div>
        <div class="muted" style="margin-top:6px">모든 수신 주소가 회원 정보에 존재합니다. → 전체 발송 가능</div>`)},
     partial:{ok:true, html:regBox('#f0cfcf','var(--danger-wash)',
-      `<div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>247</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 회원 정보 미존재</div></div>
-       ${regTbl(regRow('248','unknown01@hunet.co.kr',NOMEM)+regRow('249','01000000000',NOMEM))}
+      `<div class="ur-line"><div>총 <b>249</b></div><div style="color:#176b4a">유효 <b>247</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 해당 연수원 내 미존재</div></div>
+       ${regTbl(regRow('248','showcaseall','unknown01@hunet.co.kr',NOMEM)+regRow('249','fronttest','01000000000',NOMEM))}
        <div class="muted" style="margin-top:8px">제외된 2건은 발송되지 않으며, 유효 247건만 발송됩니다.</div>`)},
     allfail:{ok:false, html:regBox('#f0cfcf','var(--danger-wash)',
-      `<div class="ur-line"><div>총 <b>2</b></div><div style="color:#176b4a">유효 <b>0</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 회원 정보 미존재</div></div>
-       ${regTbl(regRow('1','unknown01@hunet.co.kr',NOMEM)+regRow('2','01000000000',NOMEM))}
+      `<div class="ur-line"><div>총 <b>2</b></div><div style="color:#176b4a">유효 <b>0</b></div><div style="color:#9f2f2f">제외 <b>2</b></div><div class="muted">제외 사유: 해당 연수원 내 미존재</div></div>
+       ${regTbl(regRow('1','showcaseall','unknown01@hunet.co.kr',NOMEM)+regRow('2','fronttest','01000000000',NOMEM))}
        <div class="muted" style="margin-top:8px;color:#9f2f2f">발송 가능한 유효 건이 없습니다. → <b>발송 불가</b></div>`)}
   },
   bulk:{
     pass:{ok:true, html:bulkBox('#BFE6D3','var(--success-wash)',
       `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #BFE6D3"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>3</b></div><div>오류 <b>0</b></div></div>
-       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','01012345678',OKV)+bulkRow('4','이메일','–','즉시','[공지] 12월 교육 일정 안내','park@hunet.co.kr',OKV))}`)},
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','showcaseall','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','showcaseall','01012345678',OKV)+bulkRow('4','이메일','–','즉시','[공지] 12월 교육 일정 안내','fronttest','park@hunet.co.kr',OKV))}`)},
     partial:{ok:true, html:bulkBox('#f0cfcf','var(--danger-wash)',
       `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #f0cfcf"><div>발송 건 <b>3</b></div><div style="color:#176b4a">유효 <b>2</b></div><div style="color:#9f2f2f">오류 <b>1</b></div></div>
-       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','01012345678',OKV)+bulkRow('4','이메일','–','즉시','(제목 없음)','hong[at]hunet','<span class="badge b-fail">이메일 제목 필수 · 수신 이메일 형식 오류</span>'))}
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','[안내] 11월 교육 일정 공유','showcaseall','kim@hunet.co.kr',OKV)+bulkRow('3','문자','LMS','예약','[휴넷] 신규 과정 오픈 안내','showcaseall','01012345678',OKV)+bulkRow('4','이메일','–','즉시','11월 소식','wrongtenant','park@hunet.co.kr','<span class="badge b-fail">존재하지 않는 테넌트ID</span>'))}
        <div class="muted" style="padding:10px 14px">오류 1건은 발송에서 제외되며, 유효 2건만 등록됩니다.</div>`)},
     allfail:{ok:false, html:bulkBox('#f0cfcf','var(--danger-wash)',
       `<div class="ur-line" style="padding:12px 14px;border-bottom:1px solid #f0cfcf"><div>발송 건 <b>2</b></div><div style="color:#176b4a">유효 <b>0</b></div><div style="color:#9f2f2f">오류 <b>2</b></div></div>
-       ${bulkTbl(bulkRow('2','이메일','–','즉시','(제목 없음)','hong[at]hunet','<span class="badge b-fail">이메일 제목 필수 · 수신 이메일 형식 오류</span>')+bulkRow('3','문자','–','즉시','미입력','01000000000','<span class="badge b-fail">발송 형태 누락 · 회원 정보 미존재</span>'))}
+       ${bulkTbl(bulkRow('2','이메일','–','즉시','(제목 없음)','showcaseall','hong[at]hunet','<span class="badge b-fail">이메일 제목 필수 · 수신 이메일 형식 오류</span>')+bulkRow('3','문자','–','즉시','미입력','(비어 있음)','01000000000','<span class="badge b-fail">발송 형태 누락 · 테넌트ID 누락</span>'))}
        <div class="muted" style="padding:10px 14px;color:#9f2f2f">등록 가능한 유효 건이 없습니다. → <b>발송 불가</b></div>`)}
   }
 };
@@ -779,11 +779,11 @@ function askSend(where){
 }
 function bulkRegister(){toast('유효 건을 발송 등록했습니다 (제외 건 발송 안 됨)');setTimeout(()=>sendTab('list'),600);}
 function isMail(){return document.querySelectorAll('[name=ch]')[0].closest('.radio').classList.contains('on');}
-function dlTemplate(){const head=isMail()?'이메일주소\nhong@example.com\n':'휴대폰번호\n="01012345678"\n';blobDl(head,'수신대상_템플릿.csv');}
+function dlTemplate(){const head=isMail()?'소속 연수원,이메일주소\nshowcaseall,hong@example.com\n':'소속 연수원,휴대폰번호\nshowcaseall,="01012345678"\n';blobDl(head,'수신대상_템플릿.csv');}
 function dlBulkTemplate(){
-  const header='알림 채널,발송 형태,발송 시점,발송 일시,발신 주소,발송 제목,발송 본문,수신 주소';
-  const r1='이메일,,즉시,,labs@hunet.co.kr,[안내] 11월 교육 일정,본문 내용입니다.,kim@hunet.co.kr';
-  const r2='문자,LMS,예약,2026-11-01 09:00,1644-1941,과정 수료 안내,본문 내용입니다.,="01012345678"';
+  const header='알림 채널,발송 형태,발송 시점,발송 일시,발신 주소,발송 제목,발송 본문,소속 연수원,수신 주소';
+  const r1='이메일,,즉시,,labs@hunet.co.kr,[안내] 11월 교육 일정,본문 내용입니다.,showcaseall,kim@hunet.co.kr';
+  const r2='문자,LMS,예약,2026-11-01 09:00,1644-1941,과정 수료 안내,본문 내용입니다.,showcaseall,="01012345678"';
   blobDl(header+'\n'+r1+'\n'+r2+'\n','일괄발송_템플릿.csv');
 }
 function blobDl(text,name){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+text],{type:'text/csv'}));a.download=name;a.click();toast(name+' 다운로드');}
