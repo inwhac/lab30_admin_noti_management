@@ -264,7 +264,6 @@
             <div class="daterange"><input id="sf-from" type="date" class="control" value="2026-10-01"><span>~</span><input id="sf-to" type="date" class="control" value="2026-10-22"></div></div>
           <div class="field"><label>채널</label><select id="sf-ch" class="control"><option>전체</option><option>이메일</option><option>문자</option></select></div>
           <div class="field"><label>발송 시점</label><select id="sf-when" class="control"><option>전체</option><option>즉시</option><option>예약</option></select></div>
-          <div class="field"><label>발송 상태</label><select id="sf-st" class="control"><option>전체</option><option>예약</option><option>발송중</option><option>성공</option><option>실패</option><option>취소</option></select></div>
           <div class="field grow"><label>검색어</label>
             <div class="inline"><select id="sf-kind" class="control" style="width:120px"><option>제목</option><option>등록자</option></select><input id="sf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchSend()"></div></div>
           <div class="btns"><button class="btn primary" onclick="doSearchSend()">검색</button><button class="btn" onclick="resetSend()">초기화</button></div>
@@ -275,7 +274,7 @@
         <div class="table-scroll">
           <table>
             <thead><tr>
-              <th>채널</th><th>발송 제목</th><th>대상 수</th><th>발송 시점</th><th>상태</th><th>발송일시</th><th>발송 등록자</th>
+              <th>채널</th><th>발송 제목</th><th>대상 수</th><th>발송 시점</th><th>발송일시</th><th>발송 등록자</th>
             </tr></thead>
             <tbody id="send-body"></tbody>
           </table>
@@ -625,28 +624,27 @@ function renderSend(){
   const start=(sendPage-1)*sendSize, rows=sendView.slice(start,start+sendSize);
   document.getElementById('send-count').textContent=`총 ${total.toLocaleString()}건`;
   document.getElementById('send-body').innerHTML = total===0
-    ? `<tr><td class="empty" colspan="7">검색 결과가 없습니다.</td></tr>`
+    ? `<tr><td class="empty" colspan="6">검색 결과가 없습니다.</td></tr>`
     : rows.map(r=>`
     <tr style="cursor:default">
       <td>${r.ch}</td>
       <td class="title">${esc(r.title)}</td>
       <td>${r.valid?`유효 <b>${r.valid.toLocaleString()}</b> <span class="faint">/ 제외 ${r.excl}</span>`:'<span class="faint">–</span>'}</td>
       <td>${WHEN[r.when]}</td>
-      <td>${badge(r.st)}</td><td class="mono">${r.dt}</td><td>${esc(r.by)}</td>
+      <td class="mono">${r.dt}</td><td>${esc(r.by)}</td>
     </tr>`).join('');
   setPages('send-pager','send-pages',total,pages,sendSize,sendPage,'goSend');
 }
 function goSend(p){const pages=Math.ceil(sendView.length/sendSize);if(p<1||p>pages)return;sendPage=p;renderSend();}
 function changeSendSize(){sendSize=+document.getElementById('send-size').value;sendPage=1;renderSend();}
 function doSearchSend(){
-  const from=val('sf-from'), to=val('sf-to'), ch=val('sf-ch'), when=val('sf-when'), st=val('sf-st'), kind=val('sf-kind'), kw=val('sf-kw').trim().toLowerCase();
+  const from=val('sf-from'), to=val('sf-to'), ch=val('sf-ch'), when=val('sf-when'), kind=val('sf-kind'), kw=val('sf-kw').trim().toLowerCase();
   sendView=sendAll.filter(r=>{
     const d=r.dt.slice(0,10);
     if(from&&d<from)return false;
     if(to&&d>to)return false;
     if(ch!=='전체'&&r.ch!==ch)return false;
     if(when!=='전체'&&WHEN[r.when]!==when)return false;
-    if(st!=='전체'&&ST[r.st][1]!==st)return false;
     if(kw){const hay=kind==='등록자'?r.by:r.title; if(!hay.toLowerCase().includes(kw))return false;}
     return true;
   });
@@ -655,7 +653,7 @@ function doSearchSend(){
 function resetSend(){
   document.getElementById('sf-from').value='2026-10-01';
   document.getElementById('sf-to').value='2026-10-22';
-  ['sf-ch','sf-when','sf-st','sf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
+  ['sf-ch','sf-when','sf-kind'].forEach(id=>document.getElementById(id).selectedIndex=0);
   document.getElementById('sf-kw').value='';
   sendView=sendAll; sendPage=1; renderSend(); toast('검색 조건을 초기화했습니다');
 }
