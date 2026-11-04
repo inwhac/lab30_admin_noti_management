@@ -213,7 +213,7 @@
         <div class="field grow">
           <label>검색어</label>
           <div class="inline">
-            <select id="hf-kind" class="control" style="width:160px"><option>전체</option><option>수신 주소</option></select>
+            <select id="hf-kind" class="control" style="width:160px"><option>발송 제목</option><option>수신 주소</option></select>
             <input id="hf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchHist()">
           </div>
         </div>
@@ -265,7 +265,7 @@
           <div class="field"><label>채널</label><select id="sf-ch" class="control"><option>전체</option><option>이메일</option><option>문자</option></select></div>
           <div class="field"><label>발송 시점</label><select id="sf-when" class="control"><option>전체</option><option>즉시</option><option>예약</option></select></div>
           <div class="field grow"><label>검색어</label>
-            <div class="inline"><select id="sf-kind" class="control" style="width:120px"><option>제목</option><option>등록자</option></select><input id="sf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchSend()"></div></div>
+            <div class="inline"><select id="sf-kind" class="control" style="width:120px"><option>발송 제목</option><option>등록자</option></select><input id="sf-kw" type="text" class="grow" placeholder="검색어를 입력해주세요." onkeydown="if(event.key==='Enter')doSearchSend()"></div></div>
           <div class="btns"><button class="btn primary" onclick="doSearchSend()">검색</button><button class="btn" onclick="resetSend()">초기화</button></div>
         </div>
       </div>
@@ -602,7 +602,7 @@ function doSearchHist(){
     if(to&&d>to)return false;
     if(ch!=='전체'&&r.ch!==ch)return false;
     if(kw){
-      const hay=kind==='수신 주소'?r.addr:[r.title,r.org,r.addr].join(' ');
+      const hay=kind==='수신 주소'?r.addr:r.title;
       if(!(hay||'').toLowerCase().includes(kw))return false;
     }
     return true;
